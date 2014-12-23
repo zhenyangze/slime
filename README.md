@@ -23,12 +23,8 @@ Slime 是一个简洁 合理 易于扩展的 WEB 开发框架
 4. 函数命名方式基本遵循 小驼峰(动作+描述), 例: getStatus()
 5. 框架核心为 Context + Components + 框架调度 .
 
-    Context 是一个上下文对象, 对象内可以绑定任何东西.
-    
-    Components 表示组件, 可以绑定在 Context 中.(Context 本身也是一个组件, 位于Component/Support/Context)
-    
-    框架运行基本流程:
-    
+    结构图:
+    @todo
         
 组件文档
 =====
