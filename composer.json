@@ -1,0 +1,15 @@
+{
+    "name": "slime/slime",
+    "license": "GNU GENERAL PUBLIC LICENSE V2.0",
+    "authors": [
+        {
+            "name": "SmallSlime",
+            "email": "smallslime@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Slime\\": "src/"
+        }
+    }
+}
