@@ -10,9 +10,6 @@ namespace Slime\Bundle\Framework;
  */
 abstract class Controller_CLI extends Controller_ABS
 {
-    /** @var null|\Slime\Component\Lock\IAdaptor */
-    protected $nProcessLock;
-
     /** @var null|string */
     protected $nsReleaseParam = '__RELEASE_LOCK__';
 
@@ -27,25 +24,22 @@ abstract class Controller_CLI extends Controller_ABS
             return;
         }
 
-        $this->nProcessLock = $this->CTX->make('Lock', array(2 => __CLASS__ . ":$sMainAction"), true);
-        if ($this->nProcessLock === null) {
+        /** @var \Slime\Component\Lock\IAdaptor $Lock */
+        $Lock = $this->CTX->make('Lock', array(2 => __CLASS__ . ":$sMainAction"), true);
+        if ($Lock === null) {
             return;
         }
+        $this->CTX->Event->listen(Bootstrap::EV_AFTER_RUN, function(Bootstrap $B, $Env) use($Lock) {
+            $Lock->release();
+        });
         if ($this->nsReleaseParam!==null && $this->getParam($this->nsReleaseParam)) {
-            $this->nProcessLock->release();
+            $Lock->release();
         }
-        if ($this->nProcessLock->acquire($this->iLockExpire, 0) === false) {
+        if ($Lock->acquire($this->iLockExpire, 0) === false) {
             $this->Log->info('[CONTROLLER] ; get lock failed');
             exit();
         } else {
             $this->Log->info('[CONTROLLER] ; get lock successful');
-        }
-    }
-
-    public function __after__()
-    {
-        if ($this->nProcessLock !== null) {
-            $this->nProcessLock->release();
         }
     }
 }

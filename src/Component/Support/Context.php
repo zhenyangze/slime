@@ -47,7 +47,6 @@ class Context
     {
         $this->CFG         = $CFG;
         $this->aDataConfig = $CFG->get($sCBDataKey, array());
-        $CFG->setCTX($this);
     }
 
     public function __get($sName)
@@ -82,7 +81,7 @@ class Context
 
     /**
      * @param string     $sName
-     * @param null|array $naParam               use for replace cfg set
+     * @param null|array $naParam use for replace cfg set
      * @param bool       $bDoNotThrowException
      *
      * @return null|object
@@ -100,7 +99,7 @@ class Context
         $aArr = $this->aDataConfig[$sName];
 
         if (!empty($aArr['params']) && !empty($aArr['parse_params'])) {
-            $aArr['params'] = $this->CFG->parse($aArr['params'], true);
+            $aArr['params'] = $this->parse($aArr['params']);
         }
         if ($naParam !== null) {
             $aArr['params'] = $naParam + $aArr['params'];
@@ -230,5 +229,30 @@ class Context
         $this->aCB = array_merge($this->aCB, $aName2CB);
 
         return $this;
+    }
+
+    /**
+     * @param mixed $mData
+     *
+     * @return mixed
+     */
+    public function parse($mData)
+    {
+        if (is_string($mData)) {
+            if ($mData[0] === ':') {
+                return $this->get(substr($mData, 1));
+            } elseif ($mData[0] === '\\' && ($mData[1] === '\\' || $mData[1] === ':')) {
+                return substr($mData, 1);
+            } else {
+                return $mData;
+            }
+        } elseif (is_array($mData)) {
+            foreach ($mData as $iK => $aRow) {
+                $mData[$iK] = $this->parse($aRow);
+            }
+            return $mData;
+        } else {
+            return $mData;
+        }
     }
 }

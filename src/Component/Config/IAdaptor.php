@@ -10,34 +10,12 @@ namespace Slime\Component\Config;
 interface IAdaptor
 {
     /**
-     * @param \Slime\Component\Support\Context $CTX
-     *
-     * @return void
-     */
-    public function setCTX($CTX);
-
-    /**
      * @param string $sKey
      * @param mixed  $mDefault
-     * @param bool   $bWithParse
+     * @param bool   $bForce
      *
      * @return mixed
+     * @throws \OutOfBoundsException
      */
-    public function get($sKey, $mDefault = null, $bWithParse = false);
-
-    /**
-     * @param string $sKey
-     * @param bool   $bWithParse
-     *
-     * @return mixed
-     */
-    public function getForce($sKey, $bWithParse = false);
-
-    /**
-     * @param string|array $mData
-     * @param bool         $bForce
-     *
-     * @return mixed
-     */
-    public function parse($mData, $bForce);
+    public function get($sKey, $mDefault = null, $bForce = false);
 }

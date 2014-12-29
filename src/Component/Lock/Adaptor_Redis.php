@@ -11,7 +11,6 @@ class Adaptor_Redis implements IAdaptor
 {
     /** @var \Redis */
     protected $Redis;
-    protected $bHasRelease = true;
 
     /**
      * @param \Slime\Component\NoSQL\Redis\Redis|\Redis $Redis
@@ -58,9 +57,6 @@ class Adaptor_Redis implements IAdaptor
             $this->Redis->pExpire($this->sLockKey, $iExpire);
         }
 
-        if ($bRS && $this->bHasRelease) {
-            $this->bHasRelease = false;
-        }
         return $bRS;
     }
 
@@ -69,17 +65,6 @@ class Adaptor_Redis implements IAdaptor
      */
     public function release()
     {
-        $bRS = $this->Redis->del($this->sLockKey);
-        if ($bRS) {
-            $this->bHasRelease = true;
-        }
-        return $bRS;
-    }
-
-    public function __destruct()
-    {
-        if (!$this->bHasRelease) {
-            $this->release();
-        }
+        return $this->Redis->del($this->sLockKey);
     }
 }

@@ -35,11 +35,12 @@ class Adaptor_PHP extends Adaptor_ABS
     /**
      * @param string $sKey
      * @param mixed  $mDefault
-     * @param bool   $bWithParse
+     * @param bool   $bForce
      *
      * @return mixed
+     * @throws \OutOfBoundsException
      */
-    public function get($sKey, $mDefault = null, $bWithParse = false)
+    public function get($sKey, $mDefault = null, $bForce = false)
     {
         if ($this->bIsDefault) {
             $mResult = $this->_find($sKey, $this->sBaseDir);
@@ -48,11 +49,15 @@ class Adaptor_PHP extends Adaptor_ABS
                 $this->_find($sKey, $this->sDefaultBaseDir) : $mCurResult;
         }
 
-        if ($bWithParse) {
-            $mResult = $this->parse($mResult, false);
+        if ($mResult === null) {
+            if ($bForce) {
+                throw new \OutOfBoundsException("[CONFIG] ; can not find key[$sKey] in config");
+            } else {
+                return $mDefault;
+            }
         }
 
-        return $mResult === null ? $mDefault : $mResult;
+        return $this->parse($mResult, $mDefault, $bForce);
     }
 
     protected function _find($sKey, $sBaseDir)
