@@ -31,7 +31,7 @@ class Router
      */
     public function addGET($sRE, $mCB)
     {
-        $this->aConfig[] = array('__FILTERS__' => array('@isGET'), '__RE__' => $sRE, '__CB__' => $mCB);
+        $this->aConfig[] = array('__FILTERS__' => array('~isGET'), '__RE__' => $sRE, '__CB__' => $mCB);
 
         return $this;
     }
@@ -44,7 +44,7 @@ class Router
      */
     public function addPOST($sRE, $mCB)
     {
-        $this->aConfig[] = array('__FILTERS__' => array('@isPOST'), '__RE__' => $sRE, '__CB__' => $mCB);
+        $this->aConfig[] = array('__FILTERS__' => array('~isPOST'), '__RE__' => $sRE, '__CB__' => $mCB);
 
         return $this;
     }
@@ -82,7 +82,7 @@ class Router
                         continue;
                     }
                     $mCB = array_shift($aItem);
-                    if (is_string($mCB) && $mCB[0] === '@') {
+                    if (is_string($mCB) && $mCB[0] === '~') {
                         $mCB = array('\\Slime\\Component\\Route\\Filter', substr($mCB, 1));
                     }
                     if (!call_user_func_array($mCB, array_merge($aDefaultParam, $aItem))) {
