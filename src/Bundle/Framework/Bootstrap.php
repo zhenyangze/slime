@@ -35,11 +35,11 @@ class Bootstrap
 
         $Router = new Router();
         if ($nsRouterInitKey !== null) {
-            $Router->addConfig($CFG->getForce($nsRouterInitKey));
+            $Router->addConfig($CFG->get($nsRouterInitKey, null, true));
         }
         $Event = new Event();
         if ($nsEventInitKey !== null) {
-            foreach ($CFG->getForce($nsEventInitKey) as $sKey => $aCB) {
+            foreach ($CFG->get($nsEventInitKey, null, true) as $sKey => $aCB) {
                 foreach ($aCB as $iPriority => $mCB) {
                     $Event->listen($sKey, $mCB, $iPriority);
                 }
