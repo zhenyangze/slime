@@ -54,9 +54,10 @@ class Bootstrap
     }
 
     const EV_PRE_RUN = 'slime.framework.bootstrap.pre_run';
-    const EV_AFTER_RUN = 'slime.framework.bootstrap.after_run';
     const EV_PRE_ROUTE = 'slime.framework.bootstrap.pre_route';
     const EV_HTTP_PRE_SEND = 'slime.framework.bootstrap.http_pre_send';
+    const EV_AFTER_RUN = 'slime.framework.bootstrap.after_run';
+    const EV_DESTROY = 'slime.framework.bootstrap.destroy';
 
     /** @var \Slime\Component\Support\Context */
     public $CTX;
@@ -149,6 +150,7 @@ class Bootstrap
             }
             exit(1);
         }
+        $this->Event->fire(self::EV_AFTER_RUN, $this->aParamForEV);
     }
 
     protected function runCli()
@@ -179,6 +181,6 @@ class Bootstrap
 
     public function __destruct()
     {
-        $this->Event->fire(self::EV_AFTER_RUN, $this->aParamForEV);
+        $this->Event->fire(self::EV_DESTROY, $this->aParamForEV);
     }
 }
