@@ -29,7 +29,7 @@ abstract class Controller_CLI extends Controller_ABS
         if ($Lock === null) {
             return;
         }
-        $this->CTX->Event->listen(Bootstrap::EV_AFTER_RUN, function(Bootstrap $B, $Env) use($Lock) {
+        $this->CTX->Event->listen(Bootstrap::EV_DESTROY, function(Bootstrap $B, $Env) use($Lock) {
             $Lock->release();
         });
         if ($this->nsReleaseParam!==null && $this->getParam($this->nsReleaseParam)) {
