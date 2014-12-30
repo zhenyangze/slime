@@ -70,7 +70,7 @@ class Sugar
             throw new \InvalidArgumentException("[SUGAR] : Param error[aClassAndArgs can not be empty]");
         }
         $sClassName = array_shift($aClassAndArgs);
-        if ($sClassName[0] === '@') {
+        if ($sClassName[0] === '~') {
             $sClassName = $sNS . '\\' . $sAdaptorClassPre . substr($sClassName, 1);
         }
         $Obj = self::createObj($sClassName, $aClassAndArgs);
