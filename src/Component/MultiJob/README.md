@@ -1,4 +1,9 @@
-# USAGE
+通常用于CLI下的多进程组件
+
+USAGE
+
+```
+
     <?php
     require 'MultiJob.php';
 
@@ -23,9 +28,9 @@
 
     $Obj = new Master();
     (new \Slime\Component\MultiJob\MultiJob(
-        array($Obj, 'init'),
-        array($Obj, 'getPiece'),
-        function($aData) {
+        array($Obj, 'init'),                   // master 初始化回调(可以为null)
+        array($Obj, 'getPiece'),               // worker 获取自己需要处理的任务回调(可以为null)
+        function($aData) {                     // worker业务逻辑回调, $aData 为第二个参数回调的结果
             printf(
                 "%s : %s : %s\n",
                 getmypid(),
@@ -40,6 +45,7 @@
                 )
         );
     },
-    5,
-    20
+    5,                                         // worker 数
+    20                                         // 同时存在最大进程数. null表示不限制, 直接按worker数量并发处理
     ))->run();
+```

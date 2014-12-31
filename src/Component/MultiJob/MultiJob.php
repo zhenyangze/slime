@@ -8,20 +8,20 @@ class MultiJob
      * @param null|mixed $mCBGetLocalVar
      * @param mixed      $mCBChild
      * @param int        $iNumWorker
-     * @param int        $iMaxNumChild
+     * @param int        $niMaxNumChild
      */
     public function __construct(
         $mCBMainInit,
         $mCBGetLocalVar,
         $mCBChild,
         $iNumWorker = 5,
-        $iMaxNumChild = 20
+        $niMaxNumChild = null
     ) {
         $this->mCBMainInit    = $mCBMainInit;
         $this->mCBGetLocalVar = $mCBGetLocalVar;
         $this->mCBChild       = $mCBChild;
         $this->iNumWorker     = $iNumWorker;
-        $this->iMaxNumChild   = $iMaxNumChild;
+        $this->niMaxNumChild  = $niMaxNumChild;
     }
 
     public function run()
@@ -50,7 +50,7 @@ class MultiJob
 
             # father
             // max process controller
-            if ($iCurChild >= $this->iMaxNumChild) {
+            if ($this->niMaxNumChild!==null && $iCurChild >= $this->niMaxNumChild) {
                 if (pcntl_wait($iStatus)) {
                     $iCurChild--;
                 }

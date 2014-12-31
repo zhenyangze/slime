@@ -42,6 +42,8 @@ Slime 是一个简洁 合理 易于扩展的 WEB 开发框架
 
 [Log](src/Component/Log/)
 
+[MultiJob](src/Component/MultiJob/)
+
 [NoSQL](src/Component/NoSQL/)
 
 [RDBMS](src/Component/RDBMS/)
