@@ -2,7 +2,6 @@
 namespace Slime\Component\RDBMS\ORM;
 
 use Slime\Component\RDBMS\DBAL\Engine;
-use Slime\Component\RDBMS\DBAL\Bind;
 use Slime\Component\RDBMS\DBAL\BindItem;
 use Slime\Component\RDBMS\DBAL\Condition;
 use Slime\Component\RDBMS\DBAL\EnginePool;
@@ -156,28 +155,25 @@ class Model
 
     /**
      * @param array | SQL_INSERT $m_aKVData_SQL
-     * @param null | Bind        $m_n_Bind
      *
      * @return bool | int
      */
-    public function insert($m_aKVData_SQL, $m_n_Bind = null)
+    public function insert($m_aKVData_SQL)
     {
         return $this->Engine->E(
             $SQL = is_array($m_aKVData_SQL) ?
                 $this->SQL_INS()->values($m_aKVData_SQL) :
-                $m_aKVData_SQL,
-            $m_n_Bind
+                $m_aKVData_SQL
         ) ? $this->Engine->inst($SQL)->lastInsertId() : false;
     }
 
     /**
      * @param null | string | int | Condition | SQL $m_n_siPK_Condition_SQL
      * @param array                                 $aKVData
-     * @param null | Bind                           $m_n_Bind
      *
      * @return bool | int
      */
-    public function update($m_n_siPK_Condition_SQL, array $aKVData, $m_n_Bind = null)
+    public function update($m_n_siPK_Condition_SQL, array $aKVData)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_DELETE) {
             $SQL = $m_n_siPK_Condition_SQL;
@@ -193,16 +189,15 @@ class Model
         }
         $SQL->setMulti($aKVData);
 
-        return $this->Engine->E($SQL, $m_n_Bind);
+        return $this->Engine->E($SQL);
     }
 
     /**
      * @param null | string | int | Condition | SQL $m_n_siPK_Condition_SQL
-     * @param null | Bind                           $m_n_Bind
      *
      * @return bool
      */
-    public function delete($m_n_siPK_Condition_SQL, $m_n_Bind = null)
+    public function delete($m_n_siPK_Condition_SQL)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_DELETE) {
             $SQL = $m_n_siPK_Condition_SQL;
@@ -217,16 +212,15 @@ class Model
             }
         }
 
-        return $this->Engine->E($SQL, $m_n_Bind);
+        return $this->Engine->E($SQL);
     }
 
     /**
      * @param Condition | SQL_SELECT | string | int $m_n_siPK_Condition_SQL
-     * @param Bind                                  $m_n_Bind
      *
      * @return Item | CItem | null
      */
-    public function find($m_n_siPK_Condition_SQL, $m_n_Bind = null)
+    public function find($m_n_siPK_Condition_SQL)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_SELECT) {
             $SQL = $m_n_siPK_Condition_SQL;
@@ -241,7 +235,7 @@ class Model
             }
         }
         $SQL->limit(1);
-        $mItem = $this->Engine->Q($SQL, $m_n_Bind);
+        $mItem = $this->Engine->Q($SQL);
 
         return empty($mItem) ? Factory::newNull() : new $this->sItemClass($mItem[0], $this);
     }
@@ -251,7 +245,6 @@ class Model
      * @param string | BindItem | array             $mOrderBy
      * @param null | int                            $niLimit
      * @param null | int                            $niOffset
-     * @param null | Bind                           $m_n_Bind
      *
      * @return Group | Item[]
      */
@@ -259,10 +252,9 @@ class Model
         $m_n_aPK_Condition_SQL = null,
         $mOrderBy = null,
         $niLimit = null,
-        $niOffset = null,
-        $m_n_Bind = null
+        $niOffset = null
     ) {
-        $aaData = $this->findCustom($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset, $m_n_Bind);
+        $aaData = $this->findCustom($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset);
 
         $Group = new Group($this);
         if (empty($aaData)) {
@@ -276,11 +268,10 @@ class Model
 
     /**
      * @param Condition | SQL_SELECT | null $m_n_aPK_Condition_SQL
-     * @param null | Bind                   $m_n_Bind
      *
      * @return int | bool
      */
-    public function findCount($m_n_aPK_Condition_SQL = null, $m_n_Bind = null)
+    public function findCount($m_n_aPK_Condition_SQL = null)
     {
         if ($m_n_aPK_Condition_SQL instanceof SQL_SELECT) {
             $SQL = $m_n_aPK_Condition_SQL;
@@ -294,11 +285,7 @@ class Model
                 }
             }
         }
-        $SQL->fields(V::make('count(1) AS total'))->limit(1);
-        $aItem = $this->Engine->Q(
-            $SQL,
-            $m_n_Bind
-        );
+        $aItem = $this->Engine->Q($SQL->fields(V::make('count(1) AS total'))->limit(1));
 
         return $aItem === false ? false : $aItem[0]['total'];
     }
@@ -308,7 +295,6 @@ class Model
      * @param string | BindItem | array     $mOrderBy
      * @param int                           $niLimit
      * @param int                           $niOffset
-     * @param Bind | null                   $m_n_Bind
      *
      * @return bool | array
      */
@@ -316,11 +302,10 @@ class Model
         $m_n_Condition_SQL = null,
         $mOrderBy = null,
         $niLimit = null,
-        $niOffset = null,
-        $m_n_Bind = null
+        $niOffset = null
     ) {
         if ($m_n_Condition_SQL instanceof SQL_SELECT) {
-            $aaData = $this->Engine->Q($m_n_Condition_SQL, $m_n_Bind);
+            $aaData = $this->Engine->Q($m_n_Condition_SQL);
         } else {
             if (is_array($m_n_Condition_SQL)) {
                 $m_n_Condition_SQL = Condition::build()->add($this->sPKName, 'IN', $m_n_Condition_SQL);
@@ -344,7 +329,7 @@ class Model
             if ($niOffset !== null) {
                 $SQL->offset($niOffset);
             }
-            $aaData = $this->Engine->Q($SQL, $m_n_Bind);
+            $aaData = $this->Engine->Q($SQL);
         }
 
         return $aaData;

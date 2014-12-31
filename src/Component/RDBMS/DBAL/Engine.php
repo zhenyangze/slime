@@ -63,16 +63,12 @@ class Engine
 
     /**
      * @param SQL       $SQL
-     * @param null|Bind $m_n_Bind
      * @param null|int  $niFetchType
      *
      * @return mixed
      */
-    public function Q($SQL, $m_n_Bind = null, $niFetchType = \PDO::FETCH_ASSOC)
+    public function Q($SQL, $niFetchType = \PDO::FETCH_ASSOC)
     {
-        if ($m_n_Bind !== null) {
-            $SQL->setBind($m_n_Bind);
-        };
         if ($SQL->isNeedPrepare()) {
             if (($mSTMT = $this->prepare($SQL)) === false) {
                 return false;
@@ -90,16 +86,12 @@ class Engine
 
     /**
      * @param SQL       $SQL
-     * @param null|Bind $m_n_Bind
      * @param mixed     $mSTMT
      *
      * @return bool|int
      */
-    public function E($SQL, $m_n_Bind = null, &$mSTMT = null)
+    public function E($SQL, &$mSTMT = null)
     {
-        if ($m_n_Bind !== null) {
-            $SQL->setBind($m_n_Bind);
-        };
         if ($SQL->isNeedPrepare()) {
             if (($mSTMT = $this->prepare($SQL)) === false) {
                 return false;

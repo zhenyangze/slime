@@ -77,16 +77,12 @@ abstract class SQL
     /** @var null | Bind */
     protected $m_n_Bind = null;
 
-    /**
-     * @param Bind $Bind
-     */
-    public function setBind($Bind)
-    {
-        $this->m_n_Bind = $Bind;
-    }
-
+    /** @var array */
     protected $aBindField;
 
+    /**
+     * @return array
+     */
     public function getBindFields()
     {
         return $this->aBindField;
