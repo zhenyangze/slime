@@ -154,26 +154,32 @@ class Model
     }
 
     /**
-     * @param array | SQL_INSERT $m_aKVData_SQL
+     * @param array|SQL_INSERT $m_aKVData_SQL
+     * @param mixed            $mCBBeforeQ
      *
-     * @return bool | int
+     * @return bool|int
      */
-    public function insert($m_aKVData_SQL)
+    public function insert($m_aKVData_SQL, $mCBBeforeQ = null)
     {
-        return $this->Engine->E(
-            $SQL = is_array($m_aKVData_SQL) ?
-                $this->SQL_INS()->values($m_aKVData_SQL) :
-                $m_aKVData_SQL
-        ) ? $this->Engine->inst($SQL)->lastInsertId() : false;
+        if ($m_aKVData_SQL instanceof SQL_INSERT) {
+            $SQL = $m_aKVData_SQL;
+        } else {
+            $SQL = $this->SQL_INS()->values($m_aKVData_SQL);
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
+            }
+        }
+        return $this->Engine->E($SQL) ? $this->Engine->inst($SQL)->lastInsertId() : false;
     }
 
     /**
-     * @param null | string | int | Condition | SQL $m_n_siPK_Condition_SQL
-     * @param array                                 $aKVData
+     * @param null|string|int|Condition|SQL $m_n_siPK_Condition_SQL
+     * @param array                         $aKVData
+     * @param mixed                         $mCBBeforeQ
      *
-     * @return bool | int
+     * @return bool|int
      */
-    public function update($m_n_siPK_Condition_SQL, array $aKVData)
+    public function update($m_n_siPK_Condition_SQL, array $aKVData, $mCBBeforeQ = null)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_DELETE) {
             $SQL = $m_n_siPK_Condition_SQL;
@@ -186,6 +192,9 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
+            }
         }
         $SQL->setMulti($aKVData);
 
@@ -193,11 +202,12 @@ class Model
     }
 
     /**
-     * @param null | string | int | Condition | SQL $m_n_siPK_Condition_SQL
+     * @param null|string|int|Condition|SQL $m_n_siPK_Condition_SQL
+     * @param mixed                         $mCBBeforeQ
      *
      * @return bool
      */
-    public function delete($m_n_siPK_Condition_SQL)
+    public function delete($m_n_siPK_Condition_SQL, $mCBBeforeQ = null)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_DELETE) {
             $SQL = $m_n_siPK_Condition_SQL;
@@ -210,20 +220,25 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
+            }
         }
 
         return $this->Engine->E($SQL);
     }
 
     /**
-     * @param Condition | SQL_SELECT | string | int $m_n_siPK_Condition_SQL
+     * @param Condition|SQL_SELECT|string|int $m_n_siPK_Condition_SQL
+     * @param mixed                           $mCBBeforeQ
      *
-     * @return Item | CItem | null
+     * @return Item|CItem|null
      */
-    public function find($m_n_siPK_Condition_SQL)
+    public function find($m_n_siPK_Condition_SQL, $mCBBeforeQ = null)
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_SELECT) {
             $SQL = $m_n_siPK_Condition_SQL;
+            $SQL->limit(1);
         } else {
             $SQL = $this->SQL_SEL();
             if ($m_n_siPK_Condition_SQL !== null) {
@@ -233,28 +248,33 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
+            $SQL->limit(1);
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
+            }
         }
-        $SQL->limit(1);
         $mItem = $this->Engine->Q($SQL);
 
         return empty($mItem) ? Factory::newNull() : new $this->sItemClass($mItem[0], $this);
     }
 
     /**
-     * @param Condition | SQL_SELECT | null | array $m_n_aPK_Condition_SQL
-     * @param string | BindItem | array             $mOrderBy
-     * @param null | int                            $niLimit
-     * @param null | int                            $niOffset
+     * @param Condition|SQL_SELECT|null|array $m_n_aPK_Condition_SQL
+     * @param string|BindItem|array           $mOrderBy
+     * @param null|int                        $niLimit
+     * @param null|int                        $niOffset
+     * @param mixed                           $mCBBeforeQ
      *
-     * @return Group | Item[]
+     * @return Group|Item[]
      */
     public function findMulti(
         $m_n_aPK_Condition_SQL = null,
         $mOrderBy = null,
         $niLimit = null,
-        $niOffset = null
+        $niOffset = null,
+        $mCBBeforeQ = null
     ) {
-        $aaData = $this->findCustom($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset);
+        $aaData = $this->findCustom($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset, $mCBBeforeQ);
 
         $Group = new Group($this);
         if (empty($aaData)) {
@@ -267,14 +287,15 @@ class Model
     }
 
     /**
-     * @param Condition | SQL_SELECT | null $m_n_aPK_Condition_SQL
+     * @param Condition|SQL_SELECT|null $m_n_aPK_Condition_SQL
+     * @param mixed                     $mCBBeforeQ
      *
-     * @return int | bool
+     * @return int|bool
      */
-    public function findCount($m_n_aPK_Condition_SQL = null)
+    public function findCount($m_n_aPK_Condition_SQL = null, $mCBBeforeQ = null)
     {
         if ($m_n_aPK_Condition_SQL instanceof SQL_SELECT) {
-            $SQL = $m_n_aPK_Condition_SQL;
+            $SQL = $m_n_aPK_Condition_SQL->fields(V::make('count(1) AS total'))->limit(1);
         } else {
             $SQL = $this->SQL_SEL();
             if ($m_n_aPK_Condition_SQL !== null) {
@@ -284,25 +305,31 @@ class Model
                     $SQL->where($m_n_aPK_Condition_SQL);
                 }
             }
+            $SQL->fields(V::make('count(1) AS total'))->limit(1);
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
+            }
         }
-        $aItem = $this->Engine->Q($SQL->fields(V::make('count(1) AS total'))->limit(1));
+        $aItem = $this->Engine->Q($SQL);
 
         return $aItem === false ? false : $aItem[0]['total'];
     }
 
     /**
-     * @param Condition | SQL_SELECT | null $m_n_Condition_SQL
-     * @param string | BindItem | array     $mOrderBy
-     * @param int                           $niLimit
-     * @param int                           $niOffset
+     * @param Condition|SQL_SELECT|null $m_n_Condition_SQL
+     * @param string|BindItem|array     $mOrderBy
+     * @param int                       $niLimit
+     * @param int                       $niOffset
+     * @param mixed                     $mCBBeforeQ
      *
-     * @return bool | array
+     * @return bool|array
      */
     public function findCustom(
         $m_n_Condition_SQL = null,
         $mOrderBy = null,
         $niLimit = null,
-        $niOffset = null
+        $niOffset = null,
+        $mCBBeforeQ = null
     ) {
         if ($m_n_Condition_SQL instanceof SQL_SELECT) {
             $aaData = $this->Engine->Q($m_n_Condition_SQL);
@@ -328,6 +355,9 @@ class Model
             }
             if ($niOffset !== null) {
                 $SQL->offset($niOffset);
+            }
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $SQL);
             }
             $aaData = $this->Engine->Q($SQL);
         }
