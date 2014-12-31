@@ -7,8 +7,8 @@
         
         $Log = new \Slime\Component\Log\Logger(
             array(
-                'File' => array('@File', '/tmp/proj_{level}_{date}.log'),
-                'FirePHP' => array('@FirePHP')
+                'File' => array('~File', '/tmp/proj_{level}_{date}.log'),
+                'FirePHP' => array('~FirePHP')
             ), 
             Slime\Component\Log\Logger::LEVEL_INFO
         );
