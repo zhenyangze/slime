@@ -9,8 +9,8 @@ namespace Slime\Component\Log;
  */
 class Writer_File implements IWriter
 {
-    protected $nsBufFilePath = null;
     protected $aBuf = array();
+    protected $iBuf = 0;
 
     public function __construct(
         $sFileFormat,
@@ -51,11 +51,11 @@ class Writer_File implements IWriter
             ) . PHP_EOL;
 
         if ($this->iBufMax > 0) {
-            if (count($this->aBuf) > $this->iBufMax) {
+            if ($this->iBuf >= $this->iBufMax) {
                 $this->_flush();
             } else {
-                $this->nsBufFilePath = $sFilePath;
-                $this->aBuf[] = $sStr;
+                $this->aBuf[$sFilePath][] = $sStr;
+                $this->iBuf++;
             }
         } else {
             file_put_contents($sFilePath, $sStr, FILE_APPEND | LOCK_EX);
@@ -64,11 +64,13 @@ class Writer_File implements IWriter
 
     protected function _flush()
     {
-        if (empty($this->aBuf) || $this->nsBufFilePath === null) {
-            return;
+        foreach ($this->aBuf as $sFilePath => $aBufData) {
+            if (!empty($aBufData)) {
+                file_put_contents($sFilePath, implode('', $aBufData), FILE_APPEND | LOCK_EX);
+                $this->aBuf[$sFilePath] = array();
+            }
         }
-
-        file_put_contents($this->nsBufFilePath, implode('', $this->aBuf), FILE_APPEND | LOCK_EX);
+        $this->iBuf = 0;
     }
 
     public function __destruct()
