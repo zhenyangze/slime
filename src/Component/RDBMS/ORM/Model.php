@@ -129,12 +129,18 @@ class Model
         }
     }
 
+
+    public $__aCachedTransAuto__ = array();
+
     /**
      * @param mixed $mSQL
      */
     public function beginTransaction($mSQL = null)
     {
-        $this->Engine->inst($mSQL)->beginTransaction();
+        $PDO = $this->Engine->inst($mSQL);
+        $this->__aCachedTransAuto__[] = $PDO->getAttribute(\PDO::ATTR_AUTOCOMMIT);
+        $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
+        $PDO->beginTransaction();
     }
 
     /**
@@ -142,7 +148,11 @@ class Model
      */
     public function commit($mSQL = null)
     {
-        $this->Engine->inst($mSQL)->commit();
+        $PDO = $this->Engine->inst($mSQL);
+        $PDO->commit();
+        if (!empty($this->__aCachedTransAuto__)) {
+            $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, array_pop($this->__aCachedTransAuto__));
+        }
     }
 
     /**
@@ -150,7 +160,11 @@ class Model
      */
     public function rollback($mSQL = null)
     {
-        $this->Engine->inst($mSQL)->rollBack();
+        $PDO = $this->Engine->inst($mSQL);
+        $PDO->rollBack();
+        if (!empty($this->__aCachedTransAuto__)) {
+            $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, array_pop($this->__aCachedTransAuto__));
+        }
     }
 
     /**
