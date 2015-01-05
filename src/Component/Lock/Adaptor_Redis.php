@@ -38,7 +38,7 @@ class Adaptor_Redis implements IAdaptor
             $iT1 = microtime(true);
             do {
                 $bRS = $this->Redis->setnx($this->sLockKey, 1);
-                if ($bRS || (microtime(true) - $iT1 > $iTimeout)) {
+                if ($bRS || ((microtime(true) - $iT1)*1000 > $iTimeout)) {
                     break;
                 }
                 usleep($this->iLockRetryLoopUS);
