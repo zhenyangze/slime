@@ -13,7 +13,7 @@ class Writer_STDFD implements IWriter
 
     public function __construct($nsFormat = null)
     {
-        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sMessage}' : $nsFormat;
+        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sGuid} ; {sMessage}' : $nsFormat;
     }
 
     public function acceptData($aRow)
@@ -24,10 +24,10 @@ class Writer_STDFD implements IWriter
                 $this->sFormat
             ) . PHP_EOL;
 
-        if ($aRow['iLevel'] == Logger::LEVEL_DEBUG) {
-            fprintf(STDOUT, $sStr, null);
+        if ($aRow['iLevel'] <= Logger::LEVEL_INFO) {
+            fprintf(STDOUT, $sStr);
         } else {
-            fprintf(STDERR, $sStr, null);
+            fprintf(STDERR, $sStr);
         }
     }
 }
