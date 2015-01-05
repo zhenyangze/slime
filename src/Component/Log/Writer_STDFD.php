@@ -13,7 +13,7 @@ class Writer_STDFD implements IWriter
 
     public function __construct($nsFormat = null)
     {
-        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sGuid} ; {sMessage}' : $nsFormat;
+        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sMessage}' : $nsFormat;
     }
 
     public function acceptData($aRow)
