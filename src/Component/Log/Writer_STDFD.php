@@ -13,7 +13,7 @@ class Writer_STDFD implements IWriter
 
     public function __construct($nsFormat = null)
     {
-        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sGuid} ; {sMessage}' : $nsFormat;
+        $this->sFormat = $nsFormat === null ? '[{iLevel}] : {sTime} ; {sMessage}' : $nsFormat;
     }
 
     public function acceptData($aRow)
@@ -24,6 +24,7 @@ class Writer_STDFD implements IWriter
                 $this->sFormat
             ) . PHP_EOL;
 
+        //@todo  if str has %s %d etc .. fprintf will show arg error
         if ($aRow['iLevel'] <= Logger::LEVEL_INFO) {
             fprintf(STDOUT, $sStr);
         } else {
