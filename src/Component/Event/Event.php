@@ -33,17 +33,25 @@ class Event
     }
 
     /**
-     * @param array | string $asName
-     * @param mixed          $mCB
-     * @param int            $iPriority
+     * @param array|string $asName
+     * @param mixed        $mCB
+     * @param int          $iPriority
+     * @param null|string  $nsSign
      */
-    public function listen($asName, $mCB, $iPriority = 0)
+    public function listen($asName, $mCB, $iPriority = 0, $nsSign = null)
     {
         foreach ((array)$asName as $sName) {
             if (!empty($this->aSortedListener[$sName])) {
                 $this->aSortedListener[$sName] = array();
             }
-            $this->aListener[$sName][$iPriority][] = $mCB;
+            if ($nsSign === null) {
+                ($this->aListener[$sName][$iPriority][] = $mCB);
+            } else {
+                if (isset($this->aListener[$sName][$iPriority][$nsSign])) {
+                    throw new \RuntimeException("[EVENT] ; Event[$sName.$nsSign] has exist");
+                }
+                $this->aListener[$sName][$iPriority][$nsSign] = $mCB;
+            }
         }
     }
 
@@ -73,12 +81,19 @@ class Event
     }
 
     /**
-     * @param string $sName
+     * @param string      $sName
+     * @param null|string $nsSign
      */
-    public function forget($sName)
+    public function forget($sName, $nsSign = null)
     {
-        if (isset($this->aListener[$sName])) {
-            $this->aListener[$sName] = array();
+        if ($nsSign === null) {
+            if (isset($this->aListener[$sName])) {
+                unset($this->aListener[$sName]);
+            }
+        } else {
+            if (isset($this->aListener[$sName][$nsSign])) {
+                unset($this->aListener[$sName][$nsSign]);
+            }
         }
     }
 }
