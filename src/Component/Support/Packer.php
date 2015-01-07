@@ -15,12 +15,14 @@ class Packer
     protected $aAOPCallBack = array();
     protected $aAOPMatchCallBack = array();
     protected $Obj = null;
+    protected $aDataMap = array();
 
     /**
      * @param object $mObj         obj to be packed
      * @param array  $aAOPCallBack ['execute.before,query.after' => [function(){xxx}, 'cbFunc1'], ...]
+     * @param array $aDataMap
      */
-    public function __construct($mObj, array $aAOPCallBack = array())
+    public function __construct($mObj, array $aAOPCallBack = array(), array $aDataMap = array())
     {
         $this->Obj = $mObj;
         if (!empty($aAOPCallBack)) {
@@ -30,6 +32,39 @@ class Packer
                 }
             }
         }
+
+        $this->aDataMap = $aDataMap;
+    }
+
+    /**
+     * @param $sVar
+     *
+     * @return mixed
+     */
+    public function getVar($sVar)
+    {
+        return isset($this->aDataMap[$sVar]) ? $this->aDataMap[$sVar] : null;
+    }
+
+    /**
+     * do not use!!!
+     * @param object $Obj
+     */
+    public function __setObjDanger($Obj)
+    {
+        $this->Obj = $Obj;
+    }
+
+    /**
+     * @param object $Obj
+     *
+     * @return Packer
+     */
+    public function cloneToNewObj($Obj)
+    {
+        $O = clone $this;
+        $O->__setObjDanger($Obj);
+        return $O;
     }
 
     /**

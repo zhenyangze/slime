@@ -21,8 +21,12 @@ class Event
     public function fire($sName, $aArgv = array())
     {
         if (!empty($this->aListener[$sName])) {
-            foreach ($this->getSortedListeners($sName) as $mCB) {
-                if (call_user_func_array($mCB, $aArgv) === false) {
+            foreach ($this->getSortedListeners($sName) as $aItem) {
+                if (call_user_func_array(
+                        $aItem[0],
+                        empty($aItem[1]) ? $aArgv : array_merge($aArgv, $aItem[1])
+                    ) === false
+                ) {
                     break;
                 }
             }
@@ -37,22 +41,27 @@ class Event
      * @param mixed        $mCB
      * @param int          $iPriority
      * @param null|string  $nsSign
+     * @param array        $aEvnVar
+     *
+     * @return Event
      */
-    public function listen($asName, $mCB, $iPriority = 0, $nsSign = null)
+    public function listen($asName, $mCB, $iPriority = 0, $nsSign = null, array $aEvnVar = array())
     {
         foreach ((array)$asName as $sName) {
             if (!empty($this->aSortedListener[$sName])) {
                 $this->aSortedListener[$sName] = array();
             }
             if ($nsSign === null) {
-                ($this->aListener[$sName][$iPriority][] = $mCB);
+                $this->aListener[$sName][$iPriority][] = array($mCB, $aEvnVar);
             } else {
                 if (isset($this->aListener[$sName][$iPriority][$nsSign])) {
                     throw new \RuntimeException("[EVENT] ; Event[$sName.$nsSign] has exist");
                 }
-                $this->aListener[$sName][$iPriority][$nsSign] = $mCB;
+                $this->aListener[$sName][$iPriority][$nsSign] = array($mCB, $aEvnVar);
             }
         }
+
+        return $this;
     }
 
     /**

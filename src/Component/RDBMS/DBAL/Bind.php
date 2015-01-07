@@ -99,7 +99,7 @@ class Bind implements \Countable, \ArrayAccess
      *
      * @return mixed
      */
-    public function __get($sK)
+    public function get($sK)
     {
         return $this->offsetGet($sK)->mV;
     }

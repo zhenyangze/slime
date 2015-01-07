@@ -10,7 +10,7 @@ namespace Slime\Component\View;
 class Adaptor_PHP implements IAdaptor
 {
     const EV_RENDER_BEFORE = 'slime.component.view.adaptor_php.render_before';
-    const EV_RENDER_AFTER  = 'slime.component.view.adaptor_php.render_after';
+    const EV_RENDER_AFTER = 'slime.component.view.adaptor_php.render_after';
 
     protected $sBaseDir;
     protected $sTpl;
@@ -104,16 +104,27 @@ class Adaptor_PHP implements IAdaptor
         if (!file_exists($sFile)) {
             throw new \RuntimeException("[VIEW] ; Template file[{$sFile}] is not exist");
         }
+        $aData = $this->aData;
         if ($this->nEV) {
-            $Local = new \ArrayObject();
-            $Local['file'] = $sFile;
+            $Local = new \ArrayObject(
+                array(
+                    '__FILE__'     => $sFile,
+                    '__BASE_DIR__' => $this->sBaseDir,
+                    '__TPL__'      => $this->sTpl,
+                    '__DATA__'     => $aData
+                )
+            );
             $this->nEV->fire(self::EV_RENDER_BEFORE, array($this, __METHOD__, array(), $Local));
         }
-        extract($this->aData);
-        ob_start();
-        require $sFile;
-        $sResult = ob_get_contents();
-        ob_end_clean();
+        $cbRender = function () use ($aData, $sFile) {
+            extract($this->aData);
+            ob_start();
+            require $sFile;
+            $sResult = ob_get_contents();
+            ob_end_clean();
+            return $sResult;
+        };
+        $sResult  = $cbRender();
 
         if ($this->nEV) {
             $this->nEV->fire(self::EV_RENDER_AFTER, array($this, __METHOD__, array(), $Local));

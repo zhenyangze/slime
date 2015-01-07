@@ -5,19 +5,22 @@ namespace Slime\Component\RDBMS\DBAL;
  * Class EnginePool
  *
  * @package Slime\Component\RDBMS\DBAL
- * @authro  smallslime@gmail.com
+ * @author  smallslime@gmail.com
  */
 class EnginePool
 {
     protected $aConf;
     protected $aEngine;
+    protected $nEV;
 
     /**
      * @param array $aConf see README.md
+     * @param null|\Slime\Component\Event\Event $nEV
      */
-    public function __construct(array $aConf)
+    public function __construct(array $aConf, $nEV = null)
     {
         $this->aConf = $aConf;
+        $this->nEV   = $nEV;
     }
 
     public function get($sK)
@@ -28,8 +31,10 @@ class EnginePool
             }
             $this->aEngine[$sK] = new Engine(
                 $this->aConf['__DB__'][$sK],
-                $this->aConf['__CB__'],
-                $this->aConf['__AOP__']
+                isset($this->aConf['__CB_MultiServer__']) ? $this->aConf['__CB_MultiServer__'] : null,
+                isset($this->aConf['__AOP_PDO__']) ? $this->aConf['__AOP_PDO__'] : null,
+                isset($this->aConf['__AOP_STMT__']) ? $this->aConf['__AOP_STMT__'] : null,
+                $this->nEV
             );
         }
         return $this->aEngine[$sK];

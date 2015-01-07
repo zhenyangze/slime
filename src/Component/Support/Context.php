@@ -4,26 +4,23 @@ namespace Slime\Component\Support;
 /**
  * Class Context
  *
- * Context::$Inst is readOnly, please do not write
- *
  * @package Slime\Component\Support
  * @author  smallslime@gmail.com
  */
 class Context
 {
-    /** @var Context */
-    protected static $Inst;
+    /** @var Context[] */
+    protected static $aInst;
 
     /**
-     * @param mixed  $CFG
-     * @param string $sCBDataKey
+     * @param array $aComponentConfig
      *
      * @return Context
      */
-    public static function create($CFG, $sCBDataKey)
+    public static function create($aComponentConfig)
     {
-        self::$Inst = new static($CFG, $sCBDataKey);
-        return self::$Inst;
+        self::$aInst[] = $Inst = new static($aComponentConfig);
+        return $Inst;
     }
 
     /**
@@ -31,22 +28,26 @@ class Context
      */
     public static function inst()
     {
-        return self::$Inst;
+        return current(self::$aInst);
+    }
+
+    public static function destroy()
+    {
+        array_pop(self::$aInst);
+        end(self::$aInst);
     }
 
     protected $aData = array();
-    protected $aDataConfig = array();
+    protected $aComponentConfig = array();
     protected $aCB = array();
     protected $CFG = null;
 
     /**
-     * @param \Slime\Component\Config\IAdaptor $CFG
-     * @param string                           $sCBDataKey
+     * @param array $aComponentConfig
      */
-    private function __construct($CFG, $sCBDataKey)
+    private function __construct(array $aComponentConfig)
     {
-        $this->CFG         = $CFG;
-        $this->aDataConfig = $CFG->get($sCBDataKey, array());
+        $this->aComponentConfig = $aComponentConfig;
     }
 
     public function __get($sName)
@@ -89,14 +90,14 @@ class Context
      */
     public function make($sName, array $naParam = null, $bDoNotThrowException = false)
     {
-        if (!isset($this->aDataConfig[$sName])) {
+        if (!isset($this->aComponentConfig[$sName])) {
             if ($bDoNotThrowException) {
                 return null;
             } else {
                 throw new \OutOfBoundsException("[CTX] ; [$sName] can not found in config");
             }
         }
-        $aArr = $this->aDataConfig[$sName];
+        $aArr = $this->aComponentConfig[$sName];
 
         if (!empty($aArr['params']) && !empty($aArr['parse_params'])) {
             $aArr['params'] = $this->parse($aArr['params']);

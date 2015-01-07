@@ -30,18 +30,22 @@ class Factory
     /**
      * @param array $aDBConf db conf
      * @param array $aMConf  model conf  ['__MODEL__' => [], '__DEFAULT__' => []]
+     * @param null|\Slime\Component\Event\Event $nEV
      *
      * @return Factory
      */
-    public static function createFromConfig(array $aDBConf, array $aMConf)
+    public static function createFromConfig(array $aDBConf, array $aMConf, $nEV = null)
     {
-        $EnginePool            = new EnginePool($aDBConf);
+        $EnginePool            = new EnginePool($aDBConf, $nEV);
         $aMConf['__DEFAULT__'] = empty($aMConf['__DEFAULT__']) ?
             self::$aDefaultSetting :
             array_merge(self::$aDefaultSetting, $aMConf['__DEFAULT__']);
 
-        return new self($EnginePool, empty($aMConf['__MODEL__']) ? array() : $aMConf['__MODEL__'],
-            $aMConf['__DEFAULT__']);
+        return new self(
+            $EnginePool,
+            empty($aMConf['__MODEL__']) ? array() : $aMConf['__MODEL__'],
+            $aMConf['__DEFAULT__']
+        );
     }
 
     /**

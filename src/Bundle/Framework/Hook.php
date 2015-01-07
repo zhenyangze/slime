@@ -1,13 +1,17 @@
 <?php
 namespace Slime\Bundle\Framework;
 
-class ExtHook
+class Hook
 {
+    public static $aCB_PreLog = array('Slime\\Bundle\\Framework\\Hook', 'preLog');
+    public static $aCB_AfterLog = array('Slime\\Bundle\\Framework\\Hook', 'afterLog');
+    public static $aCB_DestroyLog = array('Slime\\Bundle\\Framework\\Hook', 'destroyLog');
+
     /**
      * @param \Slime\Bundle\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
-    public static function PRE_RUN_COST($B, $Local)
+    public static function preLog($B, $Local)
     {
         $Local['__START_TIME__'] = microtime(true);
         $B->Log->info('[SYSTEM] ; system run start');
@@ -17,7 +21,7 @@ class ExtHook
      * @param \Slime\Bundle\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
-    public static function AFTER_RUN_LOG($B, $Local)
+    public static function afterLog($B, $Local)
     {
         $B->Log->info('[SYSTEM] ; system run finish');
     }
@@ -26,7 +30,7 @@ class ExtHook
      * @param \Slime\Bundle\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
-    public static function DESTROY_COST($B, $Local)
+    public static function destroyLog($B, $Local)
     {
         $B->Log->info(
             sprintf(

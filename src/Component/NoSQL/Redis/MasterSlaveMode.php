@@ -2,34 +2,16 @@
 namespace Slime\Component\NoSQL\Redis;
 
 /**
- * Class Event_Register
+ * Class MasterSlaveMode
  *
  * @package Slime\Component\NoSQL\Redis
  * @author  smallslime@gmail.com
  */
-class Ext
+class MasterSlaveMode
 {
-    /**
-     * @param \Slime\Component\Event\Event $EV
-     * @param \Slime\Component\Log\Logger  $Log
-     */
-    public static function ev_LogCost($EV, $Log)
-    {
-        $EV->listen(Redis::EV_CALL_BEFORE,
-            function ($Obj, $sMethod, $aArg, $Local) use ($Log) {
-                $Log->info("[REDIS] ; Call[$sMethod] start");
-                $Local['start'] = microtime(true);
-            }
-        );
-        $EV->listen(Redis::EV_CALL_AFTER,
-            function ($Obj, $sMethod, $aArg, $Local) use ($Log) {
-                $fCost = round(microtime(true) - $Local['start'], 4);
-                $Log->info("[REDIS] ; Call[$sMethod] finish ; cost : $fCost");
-            }
-        );
-    }
+    public static $aCB_CommonMode = array('Slime\\Component\\NoSQL\\Redis\\MasterSlaveMode', 'commonMode');
 
-    public static function cb_MasterSlave($sMethod)
+    public static function commonMode($sMethod)
     {
         static $aReadCMD = array(
             'EXISTS'           => true,

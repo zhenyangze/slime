@@ -11,49 +11,85 @@ use Slime\Component\Support\Packer;
  */
 class Engine
 {
+    const EV_PDO_RUN_BEFORE = 'slime.component.rdbms.dbal.engine.pdo_run:before';
+    const EV_PDO_RUN_AFTER = 'slime.component.rdbms.dbal.engine.pdo_run:after';
+    const EV_PDO_STMT_RUN_BEFORE = 'slime.component.rdbms.dbal.engine.pdo_stmt_run:before';
+    const EV_PDO_STMT_RUN_AFTER = 'slime.component.rdbms.dbal.engine.pdo_stmt_run:after';
+
     protected $aInst;
     protected $aInstConf;
     protected $sDefaultInstKey;
-    protected $mCB;
-    protected $naAopConf;
+    protected $mCBForMultiServer;
+    protected $sAopPDOKey;
+    protected $sAopPDOStmtKey;
+    protected $nEV;
 
-    /**
-     * @param array $aParams   see README.md
-     * @param mixed $mCB       callback for select instance config from sql
-     * @param mixed $naAopConf Conf of pdo aop
-     */
-    public function __construct(array $aParams, $mCB = null, $naAopConf = null)
+    protected $bMultiInst;
+    /** @var \Slime\Component\Support\Packer */
+    protected $OBJPackerForSTMT;
+
+    public function __get($sVar)
     {
-        reset($aParams);
-        $this->aInstConf       = $aParams;
-        $this->sDefaultInstKey = key($aParams);
-        $this->mCB             = $mCB;
-        $this->naAopConf       = $naAopConf;
+        return $this->$sVar;
     }
 
     /**
-     * @param SQL | string | null $nsoSQL
+     * @param array                             $aParams           see README.md
+     * @param null|MasterSlaveMode              $mCBForMultiServer callback for select instance config from sql
+     * @param null|string                       $nsAopPDOKey       default is 'query.before,exec.before,prepare.before'
+     * @param null|string                       $nsAopPDOStmtKey   default is
+     *                                                             'execute.before,fetch.before,fetchAll.before,fetchColumn.before,fetchObject.before,bindValue.before'
+     * @param null|\Slime\Component\Event\Event $nEV
+     */
+    public function __construct(
+        array $aParams,
+        $mCBForMultiServer = null,
+        $nsAopPDOKey = null,
+        $nsAopPDOStmtKey = null,
+        $nEV = null
+    ) {
+        reset($aParams);
+        $this->aInstConf         = $aParams;
+        $this->sDefaultInstKey   = key($aParams);
+        $this->mCBForMultiServer = $mCBForMultiServer;
+        $this->sAopPDOKey        = $nsAopPDOKey === null ? 'query.before,exec.before,prepare.before' : $nsAopPDOKey;
+        $this->sAopPDOStmtKey    = $nsAopPDOStmtKey === null ?
+            'execute.before,fetch.before,fetchAll.before,fetchColumn.before,fetchObject.before,bindValue.before' :
+            $nsAopPDOStmtKey;
+        $this->nEV               = $nEV;
+
+        $this->bMultiInst = count($this->aInstConf) > 1 && $this->mCBForMultiServer !== null;
+    }
+
+    /**
+     * @param string $sMethod
+     * @param array  $aArgv
      *
      * @return \PDO
      *
      * @throws \OutOfBoundsException
      */
-    public function inst($nsoSQL = null)
+    public function inst($sMethod, array $aArgv = array())
     {
         reset($this->aInstConf);
         $sDftK = key($this->aInstConf);
-        if ($nsoSQL !== null && $this->mCB !== null) {
-            $sK = call_user_func($this->mCB, $nsoSQL);
-        } else {
-            $sK = $sDftK;
-        }
+        $sK    = $this->bMultiInst ? call_user_func(array($this->mCBForMultiServer), $sMethod, $aArgv) : $sDftK;
 
         //@todo check aInst.sK 存活状态
         if (!isset($this->aInst[$sK])) {
             $aCFG = isset($this->aInstConf[$sK]) ? $this->aInstConf[$sK] : $this->aInstConf[$sDftK];
             $OBJ  = new \PDO($aCFG['dsn'], $aCFG['username'], $aCFG['password'], $aCFG['options']);
-            if ($this->naAopConf !== null) {
-                $OBJ = new Packer($OBJ, $this->naAopConf);
+            if ($this->sAopPDOKey !== '' && $this->nEV !== null) {
+
+                $OBJPackerForSTMT = new Packer(null,
+                    array($this->sAopPDOStmtKey => array(array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunSTMT'))),
+                    array('nEV' => $this->nEV)
+                );
+
+                $OBJ = new Packer($OBJ,
+                    array($this->sAopPDOKey => array(array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunPDO'))),
+                    array('nEV' => $this->nEV, 'PackerForSTMT' => $OBJPackerForSTMT)
+                );
             }
             $this->aInst[$sK] = $OBJ;
         }
@@ -62,8 +98,8 @@ class Engine
     }
 
     /**
-     * @param SQL       $SQL
-     * @param null|int  $niFetchType
+     * @param SQL      $SQL
+     * @param null|int $niFetchType
      *
      * @return mixed
      */
@@ -85,8 +121,8 @@ class Engine
     }
 
     /**
-     * @param SQL       $SQL
-     * @param mixed     $mSTMT
+     * @param SQL   $SQL
+     * @param mixed $mSTMT
      *
      * @return bool|int
      */
@@ -110,7 +146,7 @@ class Engine
      */
     public function prepare($soSQL)
     {
-        return $this->inst($soSQL)->prepare((string)$soSQL);
+        return $this->inst(__METHOD__, func_get_args())->prepare((string)$soSQL);
     }
 
     /**
@@ -120,7 +156,7 @@ class Engine
      */
     public function query($soSQL)
     {
-        return $this->inst($soSQL)->query((string)$soSQL);
+        return $this->inst(__METHOD__, func_get_args())->query((string)$soSQL);
     }
 
     /**
@@ -130,6 +166,50 @@ class Engine
      */
     public function exec($soSQL)
     {
-        return $this->inst($soSQL)->exec((string)$soSQL);
+        return $this->inst(__METHOD__, func_get_args())->exec((string)$soSQL);
+    }
+
+    public static function cbRunPDO(Packer $Packer, \PDO $Obj, $sMethod, $aArgv, $L)
+    {
+        /** @var \Slime\Component\Event\Event $EV */
+        if (($EV = $Packer->getVar('nEV')) === null) {
+            return;
+        }
+
+        $PackerForSTMT = $Packer->getVar('PackerForSTMT');
+        if (!$PackerForSTMT instanceof Packer) {
+            throw new \RuntimeException('Data PackerForSTMT error');
+        }
+
+        $Local  = new \ArrayObject();
+        $aParam = array($Obj, $sMethod, $aArgv, $Local);
+        $EV->fire(self::EV_PDO_RUN_BEFORE, $aParam);
+        if (!isset($Local['__RESULT__'])) {
+            $Local['__RESULT__'] = $Packer->run($sMethod, $aArgv);
+        }
+        $EV->fire(self::EV_PDO_RUN_AFTER, $aParam);
+        $mRS = $Local['__RESULT__'];
+
+        $L['__RESULT__'] = ($mRS instanceof \PDOStatement) ? $PackerForSTMT->cloneToNewObj($mRS) : $mRS;
+        $L['__STOP__']   = true;
+    }
+
+    public static function cbRunSTMT(Packer $Packer, \PDOStatement $Obj, $sMethod, $aArgv, $L)
+    {
+        /** @var \Slime\Component\Event\Event $EV */
+        if (($EV = $Packer->getVar('nEV')) === null) {
+            return;
+        }
+
+        $Local  = new \ArrayObject();
+        $aParam = array($Obj, $sMethod, $aArgv, $Local);
+        $EV->fire(self::EV_PDO_STMT_RUN_BEFORE, $aParam);
+        if (!isset($Local['__RESULT__'])) {
+            $Local['__RESULT__'] = call_user_func_array(array($Obj, $sMethod), $aArgv);
+        }
+        $EV->fire(self::EV_PDO_STMT_RUN_AFTER, $aParam);
+
+        $L['__RESULT__'] = $Local['__RESULT__'];
+        $L['__STOP__']   = true;
     }
 }

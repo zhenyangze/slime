@@ -82,4 +82,10 @@ class Sugar
         }
         return $Obj;
     }
+
+    public static $aCB_LogTime = array('Slime\\Component\\Support\\Sugar', 'logTime');
+    public static function logTime($Obj, $sMethod, $aArg, $Local)
+    {
+        $Local['__RUN_AT__'] = microtime(true);
+    }
 }
