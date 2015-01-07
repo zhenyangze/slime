@@ -55,8 +55,7 @@ class SQL_SELECT extends SQL
      */
     public function fields($sField_V)
     {
-        $aArr          = func_get_args();
-        $this->naField = $this->naField === null ? $aArr : array_merge($this->naField, $aArr);
+        $this->naField = func_get_args();
         return $this;
     }
 
