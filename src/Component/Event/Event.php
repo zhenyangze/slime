@@ -92,6 +92,8 @@ class Event
     /**
      * @param string      $sName
      * @param null|string $nsSign
+     *
+     * @return Event
      */
     public function forget($sName, $nsSign = null)
     {
@@ -104,5 +106,7 @@ class Event
                 unset($this->aListener[$sName][$nsSign]);
             }
         }
+
+        return $this;
     }
 }
