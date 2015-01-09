@@ -45,15 +45,19 @@ class Logger implements LoggerInterface
         self::LEVEL_DEBUG     => 'debug'
     );
 
+    protected $niLimit = null;
+
     /**
      * @param array $aWriterConf ['File' => ['@File', 'param1', 'param2'], '@FirePHP']
      * @param int   $iLogLevel
      * @param null  $sRequestID
+     * @param null|int $niLimit
      */
     public function __construct(
         array $aWriterConf,
         $iLogLevel = self::LEVEL_ALL,
-        $sRequestID = null
+        $sRequestID = null,
+        $niLimit = null
     ) {
         foreach ($aWriterConf as $sK => $aClassAndArgs) {
             $this->aWriter[$sK] = Sugar::createObjAdaptor(__NAMESPACE__, $aClassAndArgs, 'IWriter', 'Writer_');
@@ -78,6 +82,14 @@ class Logger implements LoggerInterface
                 $this->aWriter[$sK] = Sugar::createObjAdaptor(__NAMESPACE__, $aClassAndArgs, 'IWriter', 'Writer_');;
             }
         }
+    }
+
+    /**
+     * @param null|int $niLimit
+     */
+    public function setLimit($niLimit)
+    {
+        $this->niLimit = $niLimit;
     }
 
     /**
@@ -207,6 +219,10 @@ class Logger implements LoggerInterface
         }
 
         $sMessage = self::interpolate($sMessage, $aContext);
+        if (is_int($this->niLimit) && strlen($sMessage) > $this->niLimit) {
+            $sMessage = substr($sMessage, 0, $this->niLimit) . '...';
+        }
+
         list($sUSec, $sSec) = explode(' ', microtime());
         $sTime = date('Y-m-d H:i:s', $sSec) . '.' . substr($sUSec, 2, 4);
 
