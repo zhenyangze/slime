@@ -48,9 +48,9 @@ class Logger implements LoggerInterface
     protected $niLimit = null;
 
     /**
-     * @param array $aWriterConf ['File' => ['@File', 'param1', 'param2'], '@FirePHP']
-     * @param int   $iLogLevel
-     * @param null  $sRequestID
+     * @param array    $aWriterConf ['File' => ['@File', 'param1', 'param2'], '@FirePHP']
+     * @param int      $iLogLevel
+     * @param null     $sRequestID
      * @param null|int $niLimit
      */
     public function __construct(
@@ -64,6 +64,11 @@ class Logger implements LoggerInterface
         }
         $this->iLogLevel = $iLogLevel;
         $this->sGUID     = base_convert(rand(10, 99) . str_replace('.', '', round(microtime(true), 4)), 10, 32);
+
+        // limit:5   message:abcdefg  result:ab...
+        if (is_int($niLimit) && ($niLimit > 3)) {
+            $this->niLimit = $niLimit - 3;
+        }
     }
 
     /**
@@ -90,6 +95,16 @@ class Logger implements LoggerInterface
     public function setLimit($niLimit)
     {
         $this->niLimit = $niLimit;
+    }
+
+    /**
+     * @param int $iLevel
+     *
+     * @return bool
+     */
+    public function isNeed($iLevel)
+    {
+        return (bool)$this->iLogLevel|$iLevel;
     }
 
     /**

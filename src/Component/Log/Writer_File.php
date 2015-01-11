@@ -32,16 +32,15 @@ class Writer_File implements IWriter
 
     public function acceptData($aRow)
     {
-        $aVarMap = array();
-        if (!isset($this->aVarMap['{level}'])) {
+        $aVarMap = $this->aVarMap;
+        if (!isset($aVarMap['{level}'])) {
             $aVarMap['{level}'] = isset($this->aLevelMap[$aRow['iLevel']]) ?
                 $this->aLevelMap[$aRow['iLevel']] :
                 $this->aLevelMap[-1];
         }
-        if (!isset($this->aVarMap['{date}'])) {
+        if (!isset($aVarMap['{date}'])) {
             $aVarMap['{date}'] = date('Y-m-d');
         }
-        $aVarMap   = array_merge($aVarMap, $this->aVarMap);
         $sFilePath = str_replace(array_keys($aVarMap), array_values($aVarMap), $this->sFileFormat);
 
         $sStr = str_replace(
