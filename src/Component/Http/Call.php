@@ -1,7 +1,6 @@
 <?php
 namespace Slime\Component\Http;
 
-use Slime\Component\Support\ABS_Container;
 use Slime\Component\Support\Url;
 
 if (!extension_loaded('curl')) {
@@ -25,12 +24,8 @@ class Call
     const EV_EXEC_AFTER = 'slime.component.http.http_call.exec_after';
 
     protected $nsUrl;
-    protected $iConnTimeout;
-    protected $iTimeout;
     protected $nsIP = null;
     protected $niPort = null;
-    protected $aPostData = array();
-    protected $aFileMap = array();
     protected $aOpt = array(
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HEADER         => true,
@@ -38,6 +33,8 @@ class Call
     );
     protected $aHeader = array();
     protected $mRS;
+
+    protected $aPreCookie = array();
 
     /**
      * @param int                               $iConnTimeoutMS
@@ -86,8 +83,8 @@ class Call
      */
     public function setTimeOut($iConnTimeoutMS, $iTimeoutMS)
     {
-        $this->iConnTimeout = $iConnTimeoutMS;
-        $this->iTimeout     = $iTimeoutMS;
+        $this->aOpt[CURLOPT_CONNECTTIMEOUT_MS] = $iConnTimeoutMS;
+        $this->aOpt[CURLOPT_TIMEOUT_MS]        = $iTimeoutMS;
 
         return $this;
     }
@@ -110,7 +107,7 @@ class Call
      */
     public function setPostData(array $aKV)
     {
-        $this->aPostData = empty($this->aPostData) ? $aKV : array_merge($this->aPostData, $aKV);
+        $this->aOpt[CURLOPT_POSTFIELDS] = http_build_query($aKV);
 
         return $this;
     }
@@ -166,6 +163,7 @@ class Call
         if ($sUrl === null) {
             throw new \RuntimeException("[HTTP] ; Please call setUrl first");
         }
+
         if ($this->nsIP !== null) {
             $aBlock                = parse_url($sUrl);
             $this->aHeader['Host'] = isset($aBlock['port']) ? "{$aBlock['host']}:{$aBlock['port']}" : "{$aBlock['host']}";
@@ -199,17 +197,25 @@ class Call
             $aOpt[CURLOPT_HTTPHEADER] = array_merge($aOpt[CURLOPT_HTTPHEADER], $aHeader);
         }
 
+
+        if (!empty($this->aPreCookie)) {
+            $aCookie = array();
+            foreach ($this->aPreCookie as $sK => $aRow) {
+                if (isset($aRow['expires']) && time() > strtotime($aRow['expires'])) {
+                    continue;
+                }
+                $aCookie[] = "{$sK}={$aRow['value']}";
+            }
+            if (!empty($aCookie)) {
+                $aOpt[CURLOPT_COOKIE] = implode('; ', $aCookie);
+            }
+        }
+
         switch (strtoupper($sMethodName)) {
             case 'GET':
                 break;
             case 'POST':
                 $aOpt[CURLOPT_POST] = 1;
-                if (!empty($this->aFileMap)) {
-                    $aData = array_merge($this->aPostData, $this->aFileMap);
-                } else {
-                    $aData = empty($this->aPostData) ? '' : http_build_query($this->aPostData);
-                }
-                $aOpt[CURLOPT_POSTFIELDS] = $aData;
                 break;
             default:
                 $aOpt[CURLOPT_CUSTOMREQUEST] = $sMethodName;
@@ -230,8 +236,12 @@ class Call
         } else {
             $this->mRS = curl_exec($rCurl);
         }
-
-
+        if ($this->mRS === false) {
+            throw new HttpCallFailedException(
+                sprintf("[HTTP] ; call error ; url=$sUrl ; err_code=%s; err_msg=%s", curl_errno($rCurl), curl_error($rCurl))
+            );
+        }
+        curl_close($rCurl);
         return $this;
     }
 
@@ -243,20 +253,17 @@ class Call
         return $this->mRS;
     }
 
-    /*
     public function asOBJ()
     {
-        if ($this->mRS === false) {
-            throw new HttpCallFailedException();
-        }
         $aArr = explode("\r\n\r\n", $this->mRS, 2);
         if (count($aArr) !== 2) {
-            throw new \RuntimeException("[HTTP] : Data format error");
+            throw new \RuntimeException("[HTTP] ; Data format error");
         }
+        $sBody       = $aArr[1];
         $aHeader     = explode("\r\n", $aArr[0]);
         $bFirst      = false;
         $aTidyHeader = array();
-        $niCode      = null;
+        $niStatus    = null;
         $nsProtocol  = null;
         foreach ($aHeader as $sRow) {
             if (!$bFirst) {
@@ -264,21 +271,53 @@ class Call
                     continue;
                 }
                 $aBlock     = explode(' ', $sRow, 3);
-                $niCode     = (int)$aBlock[1];
+                $niStatus   = (int)$aBlock[1];
                 $nsProtocol = $aBlock[0];
                 $bFirst     = true;
             } else {
                 $aRow = explode(':', $sRow, 2);
                 if (count($aRow) !== 2) {
-                    trigger_error("[HTTP] Header format error[{$sRow}]", E_WARNING);
+                    trigger_error("[HTTP] ; Header format error[{$sRow}]", E_WARNING);
                     continue;
                 }
                 $aTidyHeader[trim($aRow[0])] = ltrim($aRow[1]);
             }
         }
-        //@todo
+
+        return new RESP($nsProtocol, $niStatus, $aTidyHeader, $sBody);
     }
-    */
+
+    public function nextCall(&$RESP = null)
+    {
+        $Obj = new Call($this->aOpt[CURLOPT_CONNECTTIMEOUT_MS], $this->aOpt[CURLOPT_TIMEOUT_MS], $this->nEV);
+        $RESP = $this->asOBJ();
+        $Obj->setPreCookieFromRESP($RESP);
+        $Obj->setHeaders(array('Referer' => $this->nsUrl));
+        return $Obj;
+    }
+
+    public function setPreCookieFromRESP(RESP $RESP)
+    {
+        $aTidy = array();
+        $aCookie = $RESP->getHeader('Set-Cookie');
+        foreach ($aCookie as $i => $sRow) {
+            $aRow = explode(';', $sRow);
+            if (count($aFirst = explode('=', array_shift($aRow), 2))!==2) {
+                continue;
+            }
+            $aTidy[$aFirst[0]]['value'] = $aFirst[1];
+            $aQ = &$aTidy[$aFirst[0]];
+
+            foreach ($aRow as $sKV) {
+                if (count($aTmp = explode('=', trim($sKV), 2))!==2) {
+                    continue;
+                }
+                $aQ[$aTmp[0]] = $aTmp[1];
+            }
+        }
+
+        $this->aPreCookie = $aTidy;
+    }
 }
 
 class HttpCallFailedException extends \LogicException
