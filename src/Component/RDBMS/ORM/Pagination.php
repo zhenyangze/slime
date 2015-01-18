@@ -1,6 +1,10 @@
 <?php
 namespace Slime\Component\RDBMS\ORM;
 
+use Slime\Component\Http\REQ;
+use Slime\Component\Http\RESP;
+use Slime\Component\Support\Url;
+
 /**
  * Class Pagination
  *
@@ -9,126 +13,184 @@ namespace Slime\Component\RDBMS\ORM;
  */
 class Pagination
 {
+    public static $aCBRender = array('Slime\\Component\\RDBMS\\ORM\\Pagination', 'cbRender');
+    public static $aCBError = array('Slime\\Component\\RDBMS\\ORM\\Pagination', 'cbError');
+
     /**
-     * @param \Slime\Component\Http\REQ $HttpREQ
-     * @param int                       $iNumPerPage
-     * @param null|mixed                $m_PageVar_PageVarCB
-     * @param null|mixed                $mCBRender
+     * @var int
+     */
+    public $iNumPerPage;
+
+    /**
+     * @var string
+     */
+    public $sPageVar;
+
+    /**
+     * @var mixed
+     */
+    public $mCBRender;
+
+    /**
+     * @var mixed
+     */
+    public $mCBError;
+
+    /**
+     * @var REQ
+     */
+    protected $REQ;
+
+    /**
+     * @var Url
+     */
+    protected $URL;
+
+    /**
+     * @var RESP
+     */
+    protected $RESP;
+
+    /**
+     * @param \Slime\Component\Http\REQ  $REQ
+     * @param \Slime\Component\Http\RESP $RESP
+     * @param int                        $iNumPerPage
+     * @param string                     $sPageVar
+     * @param mixed                      $mCBRender
+     * @param mixed                      $mCBError
      */
     public function __construct(
-        $HttpREQ,
+        $REQ,
+        $RESP,
         $iNumPerPage,
-        $m_PageVar_PageVarCB = 'page',
-        $mCBRender = null
+        $sPageVar = 'page',
+        $mCBRender = null,
+        $mCBError = null
     ) {
-        $this->HttpRequest         = $HttpREQ;
-        $this->iNumPerPage         = $iNumPerPage;
-        $this->m_PageVar_PageVarCB = $m_PageVar_PageVarCB;
-        $this->mCBRender           = $mCBRender === null ? array(
-            '\\Slime\\Component\\RDBMS\\ORM\\Pagination',
-            'renderDefault'
-        ) : $mCBRender;
+        $this->REQ         = $REQ;
+        $this->URL         = new Url($REQ->getUrl());
+        $this->RESP        = $RESP;
+        $this->iNumPerPage = $iNumPerPage;
+        $this->sPageVar    = $sPageVar;
+        $this->mCBRender   = $mCBRender === null ? self::$aCBRender : $mCBRender;
+        $this->mCBError    = $mCBError === null ? self::$aCBError : $mCBError;
     }
 
     /**
      * @param \Slime\Component\RDBMS\ORM\Model            $Model
-     * @param null|\Slime\Component\RDBMS\DBAL\SQL_SELECT $nSEL
+     * @param null|\Slime\Component\RDBMS\DBAL\SQL_SELECT $nSQLCommonSEL
+     * @param mixed                                       $mCBForCount
+     * @param mixed                                       $mCBForList
      *
-     * @return array [page_string, List_Group, total_item, total_page, current_page, number_per_page]
+     * @return bool|array [page_string, List_Group, total_item, page_count, current_page, number_per_page]
      */
-    public function generate($Model, $nSEL = null)
+    public function generate($Model, $nSQLCommonSEL = null, $mCBForCount = null, $mCBForList = null)
     {
-        return $this->_generate(
-            array($Model, 'findCount'),
-            array($Model, 'findMulti'),
-            $nSEL === null ? $Model->SQL_SEL() : $nSEL
-        );
-    }
-
-    /**
-     * @param callable                               $mCBCount
-     * @param callable                               $mCBList
-     * @param \Slime\Component\RDBMS\DBAL\SQL_SELECT $SQL_SEL
-     *
-     * @return array [page_string, List_Group, total_item, total_page, current_page, number_per_page]
-     */
-    public function _generate(
-        $mCBCount,
-        $mCBList,
-        $SQL_SEL
-    ) {
         # number per page
         $iNumPerPage = max(1, $this->iNumPerPage);
 
         # current page
-        $iCurrentPage = is_string($this->m_PageVar_PageVarCB) ?
-            max(1, (int)$this->HttpRequest->getG($this->m_PageVar_PageVarCB)) :
-            (int)call_user_func($this->m_PageVar_PageVarCB);
+        $iCurrentPage = (int)$this->REQ->getG($this->sPageVar);
 
-        $SQL_SEL_Total = clone $SQL_SEL;
+        if ($nSQLCommonSEL === null) {
+            $nSQLCommonSEL = $Model->SQL_SEL();
+        }
+        $SQL_SEL_Total = clone $nSQLCommonSEL;
+
         # get total
-        $iToTal = call_user_func($mCBCount, $SQL_SEL_Total);
+        $iItem = $Model->findCount($SQL_SEL_Total, $mCBForCount);
 
         # get pagination data
-        $aResult = self::doPagination($iToTal, $iNumPerPage, $iCurrentPage);
-
-        $SQL_SEL->limit($iNumPerPage)->offset(($iCurrentPage - 1) * $iNumPerPage);
+        $RS = self::doPagination($iItem, $iNumPerPage, $iCurrentPage);
+        if (!empty($RS['__error__'])) {
+            call_user_func($this->mCBError, $RS, $this->sPageVar, $this->REQ, $this->URL, $this->RESP);
+            return false;
+        }
+        $sPage = call_user_func($this->mCBRender, $RS, $this->sPageVar, $this->REQ, $this->URL, $this->RESP);
 
         # get list data
-        $List = call_user_func($mCBList, $SQL_SEL);
-
-        $sPage = $this->mCBRender === null ? $aResult : call_user_func($this->mCBRender, $this->HttpRequest, $aResult);
+        $SQL_SEL_List = clone $nSQLCommonSEL;
+        $SQL_SEL_List->limit($iNumPerPage)->offset(($iCurrentPage - 1) * $iNumPerPage);
+        $List = $Model->findMulti($SQL_SEL_List, null, null, null, $mCBForList);
 
         # result
-        return array($sPage, $List, $iToTal, $aResult['total_page'], $iCurrentPage, $iNumPerPage);
+        return array(
+            'org_result'   => $RS,
+            'pagination'   => $sPage,
+            'group'        => $List,
+            'item_count'   => $iItem,
+            'page_count'   => $RS['page_count'],
+            'current_page' => $iCurrentPage,
+            'num_pre_page' => $iNumPerPage
+        );
     }
 
     /**
-     * @param \Slime\Component\Http\REQ $REQ
-     * @param array                     $aResult
+     * @param \ArrayObject $RS
+     * @param string       $sPageVar
+     * @param REQ          $REQ
+     * @param Url          $URL
+     * @param RESP         $RESP
+     */
+    public static function cbError($RS, $sPageVar, REQ $REQ, Url $URL, RESP $RESP)
+    {
+        if (!empty($RS['__error__'])) {
+            switch ($RS['__error__']) {
+                case 1:
+                    $RESP->setRedirect($URL->getNewUrl(array($sPageVar => 1)));
+                    return;
+                case 2:
+                    $RESP->setRedirect($URL->getNewUrl(array($sPageVar => $RS['__total__'])));
+                    return;
+                default:
+                    return;
+            }
+        }
+    }
+
+    /**
+     * @param \ArrayObject $RS
+     * @param string       $sPageVar
+     * @param REQ          $REQ
+     * @param Url          $URL
+     * @param RESP         $RESP
      *
      * @return string
      */
-    public static function renderDefault($REQ, $aResult)
+    public static function cbRender(\ArrayObject $RS, $sPageVar, REQ $REQ, URL $URL, RESP $RESP)
     {
-        if (empty($aResult['list'])) {
+        if (empty($RS['list'])) {
             return '';
         }
 
-        $sURI             = strstr($REQ->getUrl(), '?', true);
-        $aGet             = $REQ->getG();
-        $sPage            = '<ul class="pagination">';
-        $aResult['first'] = 1;
+        $sPage       = '<ul class="pagination">';
+        $RS['first'] = 1;
         foreach (
             array(
                 'first'      => '首页',
                 'pre'        => '&lt;&lt;',
-                'list'       => $aResult['list'],
+                'list'       => $RS['list'],
                 'next'       => '&gt;&gt',
-                'total_page' => '末页'
+                'page_count' => '末页'
             ) as $sK => $sV
         ) {
             if ($sK === 'list') {
-                foreach ($aResult[$sK] as $iPage) {
-                    $aGet['page'] = $iPage;
+                foreach ($RS[$sK] as $iPage) {
                     $sPage .= $iPage < 0 ?
                         sprintf('<li><span>%s</span></li>', 0 - $iPage) :
                         sprintf(
-                            '<li><a href="%s?%s">%s</a></li>',
-                            $sURI,
-                            http_build_query($aGet),
+                            '<li><a href="%s">%s</a></li>',
+                            $URL->getNewUrl(array($sPageVar => $iPage)),
                             $iPage
                         );
                 }
             } else {
-                $iPage        = $aResult[$sK];
-                $aGet['page'] = abs($iPage);
+                $iPage = $RS[$sK];
                 $sPage .= $iPage <= 0 ?
                     "<li><span>{$sV}</span></li>" :
                     sprintf(
-                        '<li><a href="%s?%s">%s</a></li>',
-                        $sURI,
-                        http_build_query($aGet),
+                        '<li><a href="%s">%s</a></li>',
+                        $URL->getNewUrl(array($sPageVar => $iPage)),
                         $sV
                     );
             }
@@ -147,8 +209,6 @@ class Pagination
      *
      * @return \ArrayObject [pre:int list:int[] next:int total:int] If pre||list[]||next < 0, it means abs(value) is
      *                      current page
-     * @throws \InvalidArgumentException
-     * @throws \LogicException
      */
     public static function doPagination(
         $iTotalItem,
@@ -158,10 +218,11 @@ class Pagination
         $iDisplayAfter = null
     ) {
         if ($iCurrentPage < 1) {
-            throw new \LogicException('[PAG] ; Offset can not be less than 1');
+            return new \ArrayObject(array('__error__' => 1, '__current__' => $iCurrentPage));
         }
+
         if ($iTotalItem == 0) {
-            return array();
+            return new \ArrayObject(array('__error__' => -1));
         }
 
         if (empty($iDisplayAfter)) {
@@ -170,7 +231,13 @@ class Pagination
 
         $iTotalPage = (int)ceil($iTotalItem / $iNumPerPage);
         if ($iCurrentPage > $iTotalPage) {
-            throw new \LogicException('[PAG] ; Offset can not be more than total page');
+            return new \ArrayObject(
+                array(
+                    '__error__'   => 2,
+                    '__total__'   => $iTotalPage,
+                    '__current__' => $iCurrentPage
+                )
+            );
         }
 
         # count start
@@ -201,7 +268,7 @@ class Pagination
         }
 
         return new \ArrayObject(
-            array('pre' => $iPre, 'list' => $aResult, 'next' => $iNext, 'total_page' => $iTotalPage)
+            array('__error__' => 0, 'pre' => $iPre, 'list' => $aResult, 'next' => $iNext, 'page_count' => $iTotalPage)
         );
     }
 }
