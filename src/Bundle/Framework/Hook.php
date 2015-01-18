@@ -8,6 +8,18 @@ class Hook
     public static $aCB_DestroyLog = array('Slime\\Bundle\\Framework\\Hook', 'destroyLog');
 
     /**
+     * @param \Slime\Bundle\Framework\InitBean $B
+     */
+    public static function register($B)
+    {
+        $B->Event
+            ->listen(Bootstrap::EV_PRE_RUN, self::$aCB_PreLog)
+            ->listen(Bootstrap::EV_AFTER_RUN, self::$aCB_AfterLog)
+            ->listen(Bootstrap::EV_DESTROY, self::$aCB_DestroyLog)
+        ;
+    }
+
+    /**
      * @param \Slime\Bundle\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
