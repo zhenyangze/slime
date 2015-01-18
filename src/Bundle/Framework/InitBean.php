@@ -87,11 +87,15 @@ class InitBean
     {
         if (is_array($m_sKForConf_aConf)) {
             $this->aCTXData = (array)$m_sKForConf_aConf;
-        } else {
+        } elseif (is_string($m_sKForConf_aConf)) {
             if ($this->CFG === null) {
                 throw new \RuntimeException('[BOOTSTRAP_INIT] ; Config is not set before');
             }
-            $this->aCTXData = $this->CFG->get($m_sKForConf_aConf);
+            $aCTXData = array();
+            foreach (explode(';', $m_sKForConf_aConf) as $sK) {
+                $aCTXData = array_merge($aCTXData, $this->CFG->get($sK));
+            }
+            $this->aCTXData = $aCTXData;
         }
         return $this;
     }
