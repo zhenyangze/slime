@@ -58,7 +58,7 @@ class Factory
      * @param string $sM
      *
      * @return Model
-     * @throws \OutOfRangeException
+     * @throws \OutOfBoundsException
      */
     public function get($sM)
     {
@@ -74,7 +74,7 @@ class Factory
                 return $this->aM[$sM];
             }
             if (empty($this->aDFT['auto_create'])) {
-                throw new \DomainException("[ORM] ; Model conf[$sM] is not exists");
+                throw new \OutOfBoundsException("[ORM] ; Model conf[$sM] is not exists");
             }
         } else {
             $naConf = $this->aConf[$sM];

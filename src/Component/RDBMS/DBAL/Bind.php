@@ -154,7 +154,7 @@ class Bind implements \Countable, \ArrayAccess
     public function offsetGet($offset)
     {
         if (!isset($this->aBind[$offset])) {
-            throw new \DomainException("[DBAL] : Key[$offset] has not been bind before");
+            throw new \OutOfBoundsException("[DBAL] ; Key[$offset] has not been bind before");
         }
 
         return $this->aBind[$offset];

@@ -67,7 +67,7 @@ class Sugar
         $sAdaptorClassPre = 'Adaptor_'
     ) {
         if (empty($aClassAndArgs)) {
-            throw new \InvalidArgumentException("[SUGAR] : Param error[aClassAndArgs can not be empty]");
+            throw new \InvalidArgumentException("[SUGAR] ; Param error[aClassAndArgs can not be empty]");
         }
         $sClassName = array_shift($aClassAndArgs);
         if ($sClassName[0] === '~') {
@@ -77,7 +77,7 @@ class Sugar
         if ($sInterface !== null) {
             $sInterface = $sInterface[0] === '\\' ? substr($sInterface, 1) : "$sNS\\$sInterface";
             if (!$Obj instanceof $sInterface) {
-                throw new \UnexpectedValueException("[SUGAR] : Class[{$sClassName}] must implements [$sInterface]");
+                throw new \UnexpectedValueException("[SUGAR] ; Class[{$sClassName}] must implements [$sInterface]");
             }
         }
         return $Obj;

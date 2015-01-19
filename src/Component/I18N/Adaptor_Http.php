@@ -3,6 +3,12 @@ namespace Slime\Component\I18N;
 
 use Slime\Component\Http\REQ;
 
+/**
+ * Class Adaptor_Http
+ *
+ * @package Slime\Component\I18N
+ * @author  smallslime@gmail.com
+ */
 class Adaptor_Http extends Adaptor_ABS
 {
     public static $aLangMapDir = array(

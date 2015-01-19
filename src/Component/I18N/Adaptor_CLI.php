@@ -1,6 +1,12 @@
 <?php
 namespace Slime\Component\I18N;
 
+/**
+ * Class Adaptor_CLI
+ *
+ * @package Slime\Component\I18N
+ * @author  smallslime@gmail.com
+ */
 class Adaptor_CLI extends Adaptor_ABS
 {
     public static $aCB_GetLang = array('Slime\\Component\\I18N\\Adaptor_CLI', 'getLang');
@@ -36,7 +42,7 @@ class Adaptor_CLI extends Adaptor_ABS
     public function getCB()
     {
         if ($this->mCB === null) {
-            throw new \RuntimeException('[I18N] ; callback for getCurrentLang is not set before');
+            throw new \RuntimeException('[I18N] ; Callback for getCurrentLang is not set before');
         }
 
         return $this->mCB;

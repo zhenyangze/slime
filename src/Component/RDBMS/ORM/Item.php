@@ -115,7 +115,7 @@ class Item implements \ArrayAccess
      * @param int                                            $iOffset
      *
      * @return $this|$this[]
-     * @throws \OutOfRangeException
+     * @throws \OutOfBoundsException
      */
     public function relation(
         $sModelName,
@@ -127,7 +127,7 @@ class Item implements \ArrayAccess
         $mResult = null;
 
         if (!isset($this->__M__->aRelConf[$sModelName])) {
-            throw new \OutOfRangeException("[ORM] : Can not find relation for [$sModelName]");
+            throw new \OutOfBoundsException("[ORM] ; Can not find relation for [$sModelName]");
         }
 
         $sMethod = strtolower($this->__M__->aRelConf[$sModelName]);
@@ -151,12 +151,12 @@ class Item implements \ArrayAccess
      * @param array  $aWhere
      *
      * @return int
-     * @throws \OutOfRangeException
+     * @throws \OutOfBoundsException
      */
     public function relationCount($sModelName, array $aWhere = array())
     {
         if (!isset($this->__M__->aRelConf[$sModelName])) {
-            throw new \OutOfRangeException("[ORM] : Can not find relation for [$sModelName]");
+            throw new \OutOfBoundsException("[ORM] ; Can not find relation for [$sModelName]");
         }
 
         $sMethod = strtolower($this->__M__->aRelConf[$sModelName]);

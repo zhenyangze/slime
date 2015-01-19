@@ -52,7 +52,7 @@ class Adaptor_PHP extends Adaptor_ABS
 
         if ($mResult === null) {
             if ($bForce) {
-                throw new \OutOfBoundsException("[CONFIG] ; can not find key[$sKey] in config");
+                throw new \OutOfBoundsException("[CONFIG] ; Can not find key[$sKey] in config");
             } else {
                 return $mDefault;
             }

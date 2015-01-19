@@ -3,6 +3,12 @@ namespace Slime\Component\I18N;
 
 use Slime\Component\Config\IAdaptor as ConfAdaptor;
 
+/**
+ * Class Adaptor_ABS
+ *
+ * @package Slime\Component\I18N
+ * @author  smallslime@gmail.com
+ */
 abstract class Adaptor_ABS implements IAdaptor
 {
     /** @var null|ConfAdaptor */

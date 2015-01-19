@@ -75,7 +75,7 @@ class Adaptor_Redis implements IAdaptor
     public function getInst()
     {
         if ($this->nInst === null) {
-            throw new \RuntimeException();
+            throw new \RuntimeException('[Cache] ; Inst is not set before');
         }
 
         return $this->nInst;

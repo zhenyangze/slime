@@ -66,7 +66,7 @@ class Adaptor_RDB extends Adaptor_ABS
         }
         if (!isset($this->aCachedData[$sKey])) {
             if ($bForce) {
-                throw new \OutOfBoundsException("[CONFIG] ; can not find key[$sKey] in config");
+                throw new \OutOfBoundsException("[CONFIG] ; Can not find key[$sKey] in config");
             } else {
                 return $mDefault;
             }

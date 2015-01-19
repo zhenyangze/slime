@@ -38,7 +38,7 @@ class EnginePool
     {
         if (!isset($this->aEngine[$sK])) {
             if (!isset($this->aConf['__DB__'][$sK])) {
-                throw new \OutOfBoundsException("[DBAL] : Database config [$sK] is not exist");
+                throw new \OutOfBoundsException("[DBAL] ; Database config [$sK] is not exist");
             }
             $Obj = new Engine(
                 $this->aConf['__DB__'][$sK],

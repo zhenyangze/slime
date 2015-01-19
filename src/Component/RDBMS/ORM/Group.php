@@ -44,12 +44,12 @@ class Group implements \ArrayAccess, \Iterator, \Countable
      * @param Item | null $noModelItem full array if param is null
      *
      * @return mixed
-     * @throws \OutOfRangeException
+     * @throws \OutOfBoundsException
      */
     public function relation($sModelName, $noModelItem = null)
     {
         if (!isset($this->Model->aRelConf[$sModelName])) {
-            throw new \OutOfRangeException("[ORM] : Relation model $sModelName is not exist");
+            throw new \OutOfBoundsException("[ORM] ; Relation model $sModelName is not exist");
         }
         $sMethod = $this->Model->aRelConf[$sModelName];
         return $this->$sMethod($sModelName, $noModelItem);

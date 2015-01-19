@@ -24,7 +24,7 @@ class Adaptor_File implements IAdaptor
         $this->sCachePath = rtrim($sCacheDir, '/') . '/';
         if (!file_exists($this->sCachePath)) {
             if (!@mkdir($this->sCachePath, $iCreateMode, true)) {
-                throw new \RuntimeException("[CACHE] : Create dir[$sCacheDir] failed");
+                throw new \RuntimeException("[CACHE] ; Create dir[$sCacheDir] failed");
             }
         }
         $this->mCBKey2File = $mCBKey2File;

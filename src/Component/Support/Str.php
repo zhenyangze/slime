@@ -38,7 +38,7 @@ class Str
             $bytes = openssl_random_pseudo_bytes($length * 2);
 
             if ($bytes === false) {
-                throw new \RuntimeException('Unable to generate random string.');
+                throw new \RuntimeException('[Str] ; Unable to generate random string.');
             }
 
             return substr(str_replace(array('/', '+', '='), '', base64_encode($bytes)), 0, $length);

@@ -70,7 +70,7 @@ class Redis
         if (!isset($this->aInst[$sK])) {
             $aCFG = isset($this->aInstConf[$sK]) ? $this->aInstConf[$sK] : $this->aInstConf[$sDftK];
             if (!isset($aCFG['server']) && !isset($aCFG['servers'])) {
-                throw new \RuntimeException("[REDIS] ; Configure error : field [servers] can not be found");
+                throw new \RuntimeException("[REDIS] ; config error ; field [server/servers] can not be found");
             }
             $aS = isset($aCFG['server']) ? $aCFG['server'] : $aCFG['servers'];
             if (is_array($aS)) {

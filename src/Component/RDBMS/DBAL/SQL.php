@@ -96,7 +96,7 @@ abstract class SQL
     public function bind($STMT)
     {
         if ($STMT === false || $this->m_n_Bind === null) {
-            throw new \RuntimeException("[DBAL] : Can not do bind!");
+            throw new \RuntimeException("[DBAL] ; Can not do bind!");
         }
         $this->m_n_Bind->bind($this, $STMT);
     }
@@ -306,7 +306,7 @@ abstract class SQL
                 $mItem   = strpos($mItem, '.') === false ? "`{$mItem}`" : $mItem;
                 $aTidy[] = "$mItem $sSort";
             } else {
-                throw new \RuntimeException('[DBAL] : SQL order by parse error : ' . json_encode($mItem));
+                throw new \RuntimeException('[DBAL] ; SQL order by parse error ; ' . json_encode($mItem));
             }
         }
 
