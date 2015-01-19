@@ -3,6 +3,7 @@ namespace Slime\Bundle\Framework;
 
 class Hook
 {
+    public static $aCB_Register = array('Slime\\Bundle\\Framework\\Hook', 'register');
     public static $aCB_PreLog = array('Slime\\Bundle\\Framework\\Hook', 'preLog');
     public static $aCB_AfterLog = array('Slime\\Bundle\\Framework\\Hook', 'afterLog');
     public static $aCB_DestroyLog = array('Slime\\Bundle\\Framework\\Hook', 'destroyLog');

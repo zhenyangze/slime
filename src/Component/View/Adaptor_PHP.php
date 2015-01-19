@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\View;
 
+use Slime\Component\Event\Event;
+
 /**
  * Class Adaptor_PHP
  *
@@ -15,18 +17,18 @@ class Adaptor_PHP implements IAdaptor
     protected $sBaseDir;
     protected $sTpl;
     protected $aData = array();
+
+    /** @var null|Event */
     protected $nEV = null;
 
     /**
      * @param string|null                       $sBaseDir
-     * @param null|\Slime\Component\Event\Event $nEV
      */
-    public function __construct($sBaseDir = null, $nEV = null)
+    public function __construct($sBaseDir = null)
     {
         if ($sBaseDir !== null) {
             $this->sBaseDir = $sBaseDir;
         }
-        $this->nEV = $nEV;
     }
 
     /**
@@ -157,5 +159,21 @@ class Adaptor_PHP implements IAdaptor
     public function getTpl()
     {
         return $this->sTpl;
+    }
+
+    /**
+     * @param Event $EV
+     */
+    public function setEvent(Event $EV)
+    {
+        $this->nEV = $EV;
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function getEvent()
+    {
+        return $this->nEV;
     }
 }

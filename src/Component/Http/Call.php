@@ -1,6 +1,7 @@
 <?php
 namespace Slime\Component\Http;
 
+use Slime\Component\Event\Event;
 use Slime\Component\Support\Url;
 
 if (!extension_loaded('curl')) {
@@ -36,15 +37,16 @@ class Call
 
     protected $aPreCookie = array();
 
+    /** @var null|Event */
+    protected $nEV;
+
     /**
-     * @param int                               $iConnTimeoutMS
-     * @param int                               $iTimeoutMS
-     * @param null|\Slime\Component\Event\Event $nEV
+     * @param int $iConnTimeoutMS
+     * @param int $iTimeoutMS
      */
-    public function __construct($iConnTimeoutMS = 3000, $iTimeoutMS = 3000, $nEV = null)
+    public function __construct($iConnTimeoutMS = 3000, $iTimeoutMS = 3000)
     {
         $this->setTimeOut($iConnTimeoutMS, $iTimeoutMS);
-        $this->nEV = $nEV;
     }
 
     public function __get($sVar)
@@ -73,7 +75,6 @@ class Call
         $this->aOpt[CURLOPT_HEADER] = $bGetHeader;
         $this->aOpt[CURLOPT_NOBODY] = !$bGetBody;
     }
-
 
     /**
      * @param int $iConnTimeoutMS
@@ -112,7 +113,6 @@ class Call
         return $this;
     }
 
-
     /**
      * @param array $aKVName2File
      *
@@ -125,7 +125,6 @@ class Call
         return $this;
     }
 
-
     /**
      * @param array $aOpt
      */
@@ -133,7 +132,6 @@ class Call
     {
         $this->aOpt = empty($this->aOpt) ? $aOpt : array_merge($aOpt, $this->aOpt);
     }
-
 
     /**
      * @param array $aKV
@@ -224,21 +222,23 @@ class Call
 
         curl_setopt_array($rCurl, $aOpt);
 
-        if ($this->nEV) {
+        $nEV = $this->getEvent();
+        if ($nEV === null) {
+            $this->mRS = curl_exec($rCurl);
+        } else {
             $Local  = new \ArrayObject();
             $aParam = array($this, $sMethodName, $aArgv, $Local);
-            $this->nEV->fire(self::EV_EXEC_BEFORE, $aParam);
+            $nEV->fire(self::EV_EXEC_BEFORE, $aParam);
             if (!isset($Local['__RESULT__'])) {
                 $Local['__RESULT__'] = curl_exec($rCurl);
             }
-            $this->nEV->fire(self::EV_EXEC_AFTER, $aParam);
+            $nEV->fire(self::EV_EXEC_AFTER, $aParam);
             $this->mRS = $Local['__RESULT__'];
-        } else {
-            $this->mRS = curl_exec($rCurl);
         }
         if ($this->mRS === false) {
             throw new HttpCallFailedException(
-                sprintf("[HTTP] ; call error ; url=$sUrl ; err_code=%s; err_msg=%s", curl_errno($rCurl), curl_error($rCurl))
+                sprintf("[HTTP] ; call error ; url=$sUrl ; err_code=%s; err_msg=%s", curl_errno($rCurl),
+                    curl_error($rCurl))
             );
         }
         curl_close($rCurl);
@@ -289,7 +289,7 @@ class Call
 
     public function nextCall(&$RESP = null)
     {
-        $Obj = new Call($this->aOpt[CURLOPT_CONNECTTIMEOUT_MS], $this->aOpt[CURLOPT_TIMEOUT_MS], $this->nEV);
+        $Obj  = new Call($this->aOpt[CURLOPT_CONNECTTIMEOUT_MS], $this->aOpt[CURLOPT_TIMEOUT_MS]);
         $RESP = $this->asOBJ();
         $Obj->setPreCookieFromRESP($RESP);
         $Obj->setHeaders(array('Referer' => $this->nsUrl));
@@ -298,18 +298,18 @@ class Call
 
     public function setPreCookieFromRESP(RESP $RESP)
     {
-        $aTidy = array();
+        $aTidy   = array();
         $aCookie = $RESP->getHeader('Set-Cookie');
         foreach ($aCookie as $i => $sRow) {
             $aRow = explode(';', $sRow);
-            if (count($aFirst = explode('=', array_shift($aRow), 2))!==2) {
+            if (count($aFirst = explode('=', array_shift($aRow), 2)) !== 2) {
                 continue;
             }
             $aTidy[$aFirst[0]]['value'] = $aFirst[1];
-            $aQ = &$aTidy[$aFirst[0]];
+            $aQ                         = &$aTidy[$aFirst[0]];
 
             foreach ($aRow as $sKV) {
-                if (count($aTmp = explode('=', trim($sKV), 2))!==2) {
+                if (count($aTmp = explode('=', trim($sKV), 2)) !== 2) {
                     continue;
                 }
                 $aQ[$aTmp[0]] = $aTmp[1];
@@ -317,6 +317,22 @@ class Call
         }
 
         $this->aPreCookie = $aTidy;
+    }
+
+    /**
+     * @param Event $nEV
+     */
+    public function setEvent(Event $nEV)
+    {
+        $this->nEV = $nEV;
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function getEvent()
+    {
+        return $this->nEV;
     }
 }
 

@@ -18,20 +18,35 @@ class Adaptor_RDB extends Adaptor_ABS
     protected $sFieldV;
 
     /** @var array */
-    protected $aData = null;
+    protected $aCachedData = null;
+
+    /** @var null|Engine */
+    protected $nEngine;
 
     /**
-     * @param Engine $PDO
      * @param string $sTable
      * @param string $sFieldKey
      * @param string $sFieldValue
      */
-    public function __construct($PDO, $sTable, $sFieldKey = 'key', $sFieldValue = 'value')
+    public function __construct($sTable, $sFieldKey = 'key', $sFieldValue = 'value')
     {
-        $this->PDO     = $PDO;
         $this->sTable  = $sTable;
         $this->sFieldK = $sFieldKey;
         $this->sFieldV = $sFieldValue;
+    }
+
+    public function setEngine(Engine $Engine)
+    {
+        $this->nEngine = $Engine;
+    }
+
+    public function getEngine()
+    {
+        if ($this->nEngine === null) {
+            throw new \RuntimeException('[Config] ; Engine is not set before');
+        }
+
+        return $this->nEngine;
     }
 
     /**
@@ -44,11 +59,12 @@ class Adaptor_RDB extends Adaptor_ABS
      */
     public function get($sKey, $mDefault = null, $bForce = false)
     {
-        if ($this->aData === null) {
-            $aArr        = $this->PDO->Q(SQL_SELECT::SEL($this->sTable));
-            $this->aData = empty($aArr) ? array() : Arr::changeIndexToKVMap($aArr, $this->sFieldK, $this->sFieldV);
+        if ($this->aCachedData === null) {
+            $aArr              = $this->getEngine()->Q(SQL_SELECT::SEL($this->sTable));
+            $this->aCachedData = empty($aArr) ?
+                array() : Arr::changeIndexToKVMap($aArr, $this->sFieldK, $this->sFieldV);
         }
-        if (!isset($this->aData[$sKey])) {
+        if (!isset($this->aCachedData[$sKey])) {
             if ($bForce) {
                 throw new \OutOfBoundsException("[CONFIG] ; can not find key[$sKey] in config");
             } else {
@@ -56,6 +72,6 @@ class Adaptor_RDB extends Adaptor_ABS
             }
         }
 
-        return $this->parse($this->aData[$sKey], $mDefault, $bForce);
+        return $this->parse($this->aCachedData[$sKey], $mDefault, $bForce);
     }
 }

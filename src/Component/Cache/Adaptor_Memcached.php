@@ -14,19 +14,13 @@ class Adaptor_Memcached implements IAdaptor
     /**
      * @var \Memcached
      */
-    protected $Inst = null;
-
-    /**
-     * @param Memcached $Obj
-     */
-    public function __construct($Obj)
-    {
-        $this->Inst = $Obj;
-    }
+    protected $nInst = null;
 
     public function __call($sMethod, $aParam)
     {
-        return empty($aParam) ? $this->Inst->$sMethod() : call_user_func_array(array($this->Inst, $sMethod), $aParam);
+        return empty($aParam) ?
+            $this->getInst()->$sMethod() :
+            call_user_func_array(array($this->getInst(), $sMethod), $aParam);
     }
 
     /**
@@ -36,7 +30,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function get($sKey)
     {
-        return $this->Inst->get($sKey);
+        return $this->getInst()->get($sKey);
     }
 
     /**
@@ -48,7 +42,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function set($sKey, $mValue, $iExpire)
     {
-        return $this->Inst->set($sKey, $mValue, $iExpire);
+        return $this->getInst()->set($sKey, $mValue, $iExpire);
     }
 
     /**
@@ -58,7 +52,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function delete($sKey)
     {
-        return $this->Inst->delete($sKey);
+        return $this->getInst()->delete($sKey);
     }
 
     /**
@@ -66,6 +60,26 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function flush()
     {
-        return $this->Inst->flush();
+        return $this->getInst()->flush();
+    }
+
+    /**
+     * @param Memcached $Memcached
+     */
+    public function setInst(Memcached $Memcached)
+    {
+        $this->nInst = $Memcached;
+    }
+
+    /**
+     * @return \Memcached
+     */
+    public function getInst()
+    {
+        if ($this->nInst === null) {
+            throw new \RuntimeException();
+        }
+
+        return $this->nInst;
     }
 }

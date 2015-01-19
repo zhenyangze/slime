@@ -12,6 +12,7 @@ use Slime\Component\Support\Sugar;
  */
 class Hook
 {
+    public static $aCB_Register = array('Slime\\Component\\View\\Hook', 'register');
     public static $aCB_CostAfter = array('Slime\\Component\\View\\Hook', 'costAfter');
 
     /**

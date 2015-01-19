@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\NoSQL\Memcached;
 
+use Slime\Component\Event\Event;
+
 /**
  * Class Redis
  *
@@ -15,16 +17,15 @@ class Memcached
      * @var \Memcached
      */
     protected $Inst = null;
-    protected $nEV = null;
 
+    /** @var null|Event */
+    protected $nEV = null;
     /**
-     * @param array                             $aConfig
-     * @param null|\Slime\Component\Event\Event $nEV
+     * @param array $aConfig
      */
-    public function __construct(array $aConfig, $nEV = null)
+    public function __construct(array $aConfig)
     {
         $this->aConfig = $aConfig;
-        $this->nEV     = $nEV;
     }
 
     /**
@@ -42,17 +43,34 @@ class Memcached
 
     public function __call($sMethod, $aArgv)
     {
-        if ($this->nEV) {
+        $nEv = $this->getEvent();
+        if ($nEv===null) {
+            return call_user_func_array(array($this->inst(), $sMethod), $aArgv);
+        } else {
             $Local  = new \ArrayObject();
             $aParam = array($this, $sMethod, $aArgv, $Local);
-            $this->nEV->fire(self::EV_CALL_BEFORE, $aParam);
+            $nEv->fire(self::EV_CALL_BEFORE, $aParam);
             if (!isset($Local['__RESULT__'])) {
                 $Local['__RESULT__'] = call_user_func_array(array($this->inst(), $sMethod), $aArgv);
             }
-            $this->nEV->fire(self::EV_CALL_AFTER, $aParam);
+            $nEv->fire(self::EV_CALL_AFTER, $aParam);
             return $Local['__RESULT__'];
-        } else {
-            return call_user_func_array(array($this->inst(), $sMethod), $aArgv);
         }
+    }
+
+    /**
+     * @param Event $Ev
+     */
+    public function setEvent(Event $Ev)
+    {
+        $this->nEV = $Ev;
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function getEvent()
+    {
+        return $this->nEV;
     }
 }

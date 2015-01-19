@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\NoSQL\Redis;
 
+use Slime\Component\Event\Event;
+
 /**
  * Class Redis
  *
@@ -15,30 +17,35 @@ class Redis
     /**
      * @var \Redis[]
      */
-    private $aInst;
+    protected $aInst;
 
     /**
      * @var array
      */
     protected $aInstConf;
     protected $mCB;
+
+    /**
+     * @var null|Event
+     */
     protected $nEV = null;
 
     /**
-     * @param array                             $aConfig
-     * @param mixed                             $mCB
-     * @param null|\Slime\Component\Event\Event $nEV
+     * @param array $aConfig
+     * @param mixed $mCB
      */
-    public function __construct(array $aConfig, $mCB = null, $nEV = null)
+    public function __construct(array $aConfig, $mCB = null)
     {
         $this->aInstConf = $aConfig;
         $this->mCB       = $mCB;
-        $this->nEV       = $nEV;
     }
 
     public function __call($sMethod, $aArgv)
     {
-        if ($this->nEV) {
+        $nEV = $this->getEvent();
+        if ($nEV === null) {
+            return call_user_func_array(array($this->inst($sMethod), $sMethod), $aArgv);
+        } else {
             $Local  = new \ArrayObject();
             $aParam = array($this, $sMethod, $aArgv, $Local);
             $this->nEV->fire(self::EV_CALL_BEFORE, $aParam);
@@ -47,8 +54,6 @@ class Redis
             }
             $this->nEV->fire(self::EV_CALL_AFTER, $aParam);
             return $Local['__RESULT__'];
-        } else {
-            return call_user_func_array(array($this->inst($sMethod), $sMethod), $aArgv);
         }
     }
 
@@ -92,5 +97,21 @@ class Redis
         }
 
         return $this->aInst[$sK];
+    }
+
+    /**
+     * @param Event $EV
+     */
+    public function setEvent(Event $EV)
+    {
+        $this->nEV = $EV;
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function getEvent()
+    {
+        return $this->nEV;
     }
 }

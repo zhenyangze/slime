@@ -1,6 +1,7 @@
 <?php
 namespace Slime\Component\RDBMS\ORM;
 
+use Slime\Component\Event\Event;
 use Slime\Component\RDBMS\DBAL\EnginePool;
 
 /**
@@ -11,53 +12,35 @@ use Slime\Component\RDBMS\DBAL\EnginePool;
  */
 class Factory
 {
-    /** @var \Slime\Component\RDBMS\DBAL\EnginePool */
-    protected $EnginePool;
-    protected $aConf;
-    protected $aDFT;
-
-    /** @var Model[] */
-    protected $aM = array();
-
     protected static $aDefaultSetting = array(
         'db'         => 'default',
         'model_pre'  => '\\',
         'item_pre'   => '\\',
-        'model_base' => '\\Slime\\Component\\RDBMS\\ORM\\Model',
-        'item_base'  => '\\Slime\\Component\\RDBMS\\ORM\\Item'
+        'model_base' => 'Slime\\Component\\RDBMS\\ORM\\Model',
+        'item_base'  => 'Slime\\Component\\RDBMS\\ORM\\Item'
     );
 
+    /** @var null|EnginePool */
+    private $nEnginePool;
+    /** @var null|Event */
+    private $nEV;
+
+    protected $aConf;
+    protected $aDFT;
+    /** @var Model[] */
+    protected $aM = array();
+
     /**
-     * @param array $aDBConf db conf
-     * @param array $aMConf  model conf  ['__MODEL__' => [], '__DEFAULT__' => []]
-     * @param null|\Slime\Component\Event\Event $nEV
-     *
-     * @return Factory
+     * @param array $aConf model conf
      */
-    public static function createFromConfig(array $aDBConf, array $aMConf, $nEV = null)
+    public function __construct(array $aConf)
     {
-        $EnginePool            = new EnginePool($aDBConf, $nEV);
-        $aMConf['__DEFAULT__'] = empty($aMConf['__DEFAULT__']) ?
+        $aConf['__DEFAULT__'] = empty($aConf['__DEFAULT__']) ?
             self::$aDefaultSetting :
-            array_merge(self::$aDefaultSetting, $aMConf['__DEFAULT__']);
-
-        return new self(
-            $EnginePool,
-            empty($aMConf['__MODEL__']) ? array() : $aMConf['__MODEL__'],
-            $aMConf['__DEFAULT__']
-        );
-    }
-
-    /**
-     * @param \Slime\Component\RDBMS\DBAL\EnginePool $EnginePool
-     * @param array                                  $aConf    model conf
-     * @param array                                  $aDefault model default setting
-     */
-    public function __construct($EnginePool, array $aConf, array $aDefault)
-    {
-        $this->EnginePool = $EnginePool;
-        $this->aConf      = $aConf;
-        $this->aDFT       = $aDefault;
+            array_merge(self::$aDefaultSetting, $aConf['__DEFAULT__']);
+        $this->aDFT           = $aConf['__DEFAULT__'];
+        unset($aConf['__DEFAULT__']);
+        $this->aConf = $aConf;
     }
 
     /**
@@ -80,15 +63,15 @@ class Factory
     public function get($sM)
     {
         if (isset($this->aM[$sM])) {
-            goto END;
+            return $this->aM[$sM];
         }
 
         if (!isset($this->aConf[$sM])) {
             if (!empty($this->aDFT['create_direct'])) {
                 $sMClass       = "{$this->aDFT['model_pre']}{$sM}";
                 $sItemClass    = "{$this->aDFT['item_pre']}{$sM}";
-                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->EnginePool, $this->aDFT['db'], null);
-                goto END;
+                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->getEnginePool(), $this->aDFT['db'], null);
+                return $this->aM[$sM];
             }
             if (empty($this->aDFT['auto_create'])) {
                 throw new \DomainException("[ORM] ; Model conf[$sM] is not exists");
@@ -105,12 +88,11 @@ class Factory
             $sItemClass = "{$this->aDFT['item_pre']}{$naConf['model']}";
         }
         $this->aM[$sM] = new $sMClass(
-            $this, $sM, $sItemClass, $this->EnginePool,
+            $this, $sM, $sItemClass, $this->getEnginePool(),
             isset($naConf[$sM]['db']) ? $naConf[$sM]['db'] : $this->aDFT['db'],
             $naConf
         );
 
-        END:
         return $this->aM[$sM];
     }
 
@@ -124,47 +106,85 @@ class Factory
         return $this->$sVar;
     }
 
-    protected static $bCMode = false;
-    protected static $bCMode_Tmp = false;
+    /**
+     * @param Event $EV
+     */
+    public function setEvent(Event $EV)
+    {
+        $this->nEV = $EV;
+        $this->getEnginePool()->setEvent($EV);
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function getEvent()
+    {
+        return $this->nEV;
+    }
+
+    /**
+     * @param EnginePool $EnginePool
+     */
+    public function setEnginePool(EnginePool $EnginePool)
+    {
+        $this->nEnginePool = $EnginePool;
+    }
+
+    /**
+     * @return EnginePool
+     *
+     * @throws \RuntimeException
+     */
+    public function getEnginePool()
+    {
+        if ($this->nEnginePool === null) {
+            throw new \RuntimeException("[ORM] ; EnginePool is not set before");
+        }
+        return $this->nEnginePool;
+    }
+
+    protected $bCMode = false;
+    protected $bCMode_Tmp = false;
 
     /**
      * @param bool $b
      */
-    public static function changeCMode_Tmp($b)
+    public function changeCMode_Tmp($b)
     {
-        if (self::$bCMode !== $b) {
-            self::$bCMode_Tmp = self::$bCMode;
-            self::$bCMode     = $b;
+        if ($this->bCMode != $b) {
+            $this->bCMode_Tmp = $this->bCMode;
+            $this->bCMode     = (bool)$b;
         }
     }
 
-    public static function resetCMode()
+    public function resetCMode()
     {
-        if (self::$bCMode_Tmp !== null) {
-            self::$bCMode     = self::$bCMode_Tmp;
-            self::$bCMode_Tmp = null;
+        if ($this->bCMode_Tmp !== null) {
+            $this->bCMode     = $this->bCMode_Tmp;
+            $this->bCMode_Tmp = null;
         }
     }
 
     /**
      * @param bool $b
      */
-    public static function changeCMode($b)
+    public function changeCMode($b)
     {
-        self::$bCMode = $b;
+        $this->bCMode = (bool)$b;
     }
 
     /**
      * @return bool
      */
-    public static function isCMode()
+    public function isCMode()
     {
-        return (bool)self::$bCMode;
+        return $this->bCMode;
     }
 
-    public static function newNull()
+    public function newNull()
     {
-        return self::isCMode() ? new CItem() : null;
+        return $this->bCMode ? new CItem() : null;
     }
 
     /**

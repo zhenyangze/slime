@@ -61,7 +61,7 @@ class Model
      * @param string     $sDB
      * @param array      $naConf
      *
-     * @throws \RuntimeException
+     * @throws \OutOfBoundsException
      */
     public function __construct($Factory, $sMName, $sItemClass, $EnginePool, $sDB, array $naConf = null)
     {
@@ -269,7 +269,7 @@ class Model
         }
         $mItem = $this->Engine->Q($SQL);
 
-        return empty($mItem) ? Factory::newNull() : new $this->sItemClass($mItem[0], $this);
+        return empty($mItem) ? $this->Factory->newNull() : new $this->sItemClass($mItem[0], $this);
     }
 
     /**

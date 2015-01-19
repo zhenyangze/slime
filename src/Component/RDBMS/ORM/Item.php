@@ -140,7 +140,7 @@ class Item implements \ArrayAccess
         }
 
         if ($mResult === null) {
-            $mResult = Factory::newNull();
+            $mResult = $this->__M__->Factory->newNull();
         }
 
         return $mResult;

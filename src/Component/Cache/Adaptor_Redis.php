@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\Cache;
 
+use Slime\Component\NoSQL\Redis\Redis;
+
 /**
  * Class Adaptor_Redis
  *
@@ -9,23 +11,14 @@ namespace Slime\Component\Cache;
  */
 class Adaptor_Redis implements IAdaptor
 {
-    /** @var array */
-    public $aConfig;
-
     /** @var \Redis */
-    private $Inst;
-
-    /**
-     * @param \Slime\Component\NoSQL\Redis\Redis $Inst
-     */
-    public function __construct($Inst)
-    {
-        $this->Inst = $Inst;
-    }
+    protected $nInst = null;
 
     public function __call($sMethod, $aParam)
     {
-        return empty($aParam) ? $this->Inst->$sMethod() : call_user_func_array(array($this->Inst, $sMethod), $aParam);
+        return empty($aParam) ?
+            $this->getInst()->$sMethod() :
+            call_user_func_array(array($this->getInst(), $sMethod), $aParam);
     }
 
     /**
@@ -35,7 +28,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function get($sKey)
     {
-        return $this->Inst->get($sKey);
+        return $this->getInst()->get($sKey);
     }
 
     /**
@@ -47,7 +40,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function set($sKey, $mValue, $iExpire)
     {
-        return $this->Inst->set($sKey, $mValue, $iExpire);
+        return $this->getInst()->set($sKey, $mValue, $iExpire);
     }
 
     /**
@@ -57,7 +50,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function delete($sKey)
     {
-        return $this->Inst->delete($sKey);
+        return $this->getInst()->del($sKey);
     }
 
     /**
@@ -65,6 +58,26 @@ class Adaptor_Redis implements IAdaptor
      */
     public function flush()
     {
-        return $this->Inst->flushDB();
+        return $this->getInst()->flushDB();
+    }
+
+    /**
+     * @param Redis $Redis
+     */
+    public function setInst(Redis $Redis)
+    {
+        $this->nInst = $Redis;
+    }
+
+    /**
+     * @return \Redis
+     */
+    public function getInst()
+    {
+        if ($this->nInst === null) {
+            throw new \RuntimeException();
+        }
+
+        return $this->nInst;
     }
 }

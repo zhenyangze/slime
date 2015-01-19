@@ -10,26 +10,27 @@ namespace Slime\Component\Config;
 class Adaptor_PHP extends Adaptor_ABS
 {
     /** @var string */
-    private $sBaseDir;
+    protected $sCurrentDir;
 
     /** @var string */
-    private $sDefaultBaseDir;
+    protected $sDefaultBaseDir;
 
     /** @var bool */
-    private $bIsDefault;
+    protected $bIsDefault;
 
     /** @var array */
-    private $aCachedData;
+    protected $aCachedData;
 
     /**
      * @param string      $sBaseDir
-     * @param null|string $nsDefaultBaseDir
+     * @param string      $sCurrentDirName
+     * @param null|string $nsDefaultDirName
      */
-    public function __construct($sBaseDir, $nsDefaultBaseDir = null)
+    public function __construct($sBaseDir, $sCurrentDirName, $nsDefaultDirName = null)
     {
-        $this->sBaseDir        = $sBaseDir;
-        $this->sDefaultBaseDir = $nsDefaultBaseDir === null ? $sBaseDir : $nsDefaultBaseDir;
-        $this->bIsDefault      = $this->sBaseDir === $this->sDefaultBaseDir;
+        $this->sCurrentDir     = $sBaseDir . '/' . $sCurrentDirName;
+        $this->sDefaultBaseDir = $nsDefaultDirName === null ? $this->sCurrentDir : $sBaseDir . '/' . $nsDefaultDirName;
+        $this->bIsDefault      = $this->sCurrentDir === $this->sDefaultBaseDir;
     }
 
     /**
@@ -43,9 +44,9 @@ class Adaptor_PHP extends Adaptor_ABS
     public function get($sKey, $mDefault = null, $bForce = false)
     {
         if ($this->bIsDefault) {
-            $mResult = $this->_find($sKey, $this->sBaseDir);
+            $mResult = $this->_find($sKey, $this->sCurrentDir);
         } else {
-            $mResult = (($mCurResult = $this->_find($sKey, $this->sBaseDir)) === null) ?
+            $mResult = (($mCurResult = $this->_find($sKey, $this->sCurrentDir)) === null) ?
                 $this->_find($sKey, $this->sDefaultBaseDir) : $mCurResult;
         }
 
