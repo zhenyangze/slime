@@ -20,11 +20,6 @@ class Factory
         'item_base'  => 'Slime\\Component\\RDBMS\\ORM\\Item'
     );
 
-    /** @var null|EnginePool */
-    private $nEnginePool;
-    /** @var null|Event */
-    private $nEV;
-
     protected $aConf;
     protected $aDFT;
     /** @var Model[] */
@@ -70,7 +65,7 @@ class Factory
             if (!empty($this->aDFT['create_direct'])) {
                 $sMClass       = "{$this->aDFT['model_pre']}{$sM}";
                 $sItemClass    = "{$this->aDFT['item_pre']}{$sM}";
-                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->getEnginePool(), $this->aDFT['db'], null);
+                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
                 return $this->aM[$sM];
             }
             if (empty($this->aDFT['auto_create'])) {
@@ -88,7 +83,7 @@ class Factory
             $sItemClass = "{$this->aDFT['item_pre']}{$naConf['model']}";
         }
         $this->aM[$sM] = new $sMClass(
-            $this, $sM, $sItemClass, $this->getEnginePool(),
+            $this, $sM, $sItemClass, $this->_getEnginePool(),
             isset($naConf[$sM]['db']) ? $naConf[$sM]['db'] : $this->aDFT['db'],
             $naConf
         );
@@ -104,44 +99,6 @@ class Factory
     public function __get($sVar)
     {
         return $this->$sVar;
-    }
-
-    /**
-     * @param Event $EV
-     */
-    public function setEvent(Event $EV)
-    {
-        $this->nEV = $EV;
-        $this->getEnginePool()->setEvent($EV);
-    }
-
-    /**
-     * @return null|Event
-     */
-    public function getEvent()
-    {
-        return $this->nEV;
-    }
-
-    /**
-     * @param EnginePool $EnginePool
-     */
-    public function setEnginePool(EnginePool $EnginePool)
-    {
-        $this->nEnginePool = $EnginePool;
-    }
-
-    /**
-     * @return EnginePool
-     *
-     * @throws \RuntimeException
-     */
-    public function getEnginePool()
-    {
-        if ($this->nEnginePool === null) {
-            throw new \RuntimeException("[ORM] ; EnginePool is not set before");
-        }
-        return $this->nEnginePool;
     }
 
     protected $bCMode = false;
@@ -202,5 +159,50 @@ class Factory
         } else {
             return false;
         }
+    }
+
+
+    /** @var null|EnginePool */
+    private $_nEnginePool = null;
+
+    /** @var null|Event */
+    private $_nEV = null;
+
+    /**
+     * @param Event $EV
+     */
+    public function _setEvent(Event $EV)
+    {
+        $this->_nEV = $EV;
+        $this->_getEnginePool()->_setEvent($EV);
+    }
+
+    /**
+     * @return null|Event
+     */
+    public function _getEvent()
+    {
+        return $this->_nEV;
+    }
+
+    /**
+     * @param EnginePool $EnginePool
+     */
+    public function _setEnginePool(EnginePool $EnginePool)
+    {
+        $this->_nEnginePool = $EnginePool;
+    }
+
+    /**
+     * @return EnginePool
+     *
+     * @throws \RuntimeException
+     */
+    public function _getEnginePool()
+    {
+        if ($this->_nEnginePool === null) {
+            throw new \RuntimeException('[ORM] ; EnginePool is not set before');
+        }
+        return $this->_nEnginePool;
     }
 }

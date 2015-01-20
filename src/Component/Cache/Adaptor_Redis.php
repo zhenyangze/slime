@@ -11,14 +11,11 @@ use Slime\Component\NoSQL\Redis\Redis;
  */
 class Adaptor_Redis implements IAdaptor
 {
-    /** @var \Redis */
-    protected $nInst = null;
-
     public function __call($sMethod, $aParam)
     {
         return empty($aParam) ?
-            $this->getInst()->$sMethod() :
-            call_user_func_array(array($this->getInst(), $sMethod), $aParam);
+            $this->_getInst()->$sMethod() :
+            call_user_func_array(array($this->_getInst(), $sMethod), $aParam);
     }
 
     /**
@@ -28,7 +25,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function get($sKey)
     {
-        return $this->getInst()->get($sKey);
+        return $this->_getInst()->get($sKey);
     }
 
     /**
@@ -40,7 +37,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function set($sKey, $mValue, $iExpire)
     {
-        return $this->getInst()->set($sKey, $mValue, $iExpire);
+        return $this->_getInst()->set($sKey, $mValue, $iExpire);
     }
 
     /**
@@ -50,7 +47,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function delete($sKey)
     {
-        return $this->getInst()->del($sKey);
+        return $this->_getInst()->del($sKey);
     }
 
     /**
@@ -58,26 +55,30 @@ class Adaptor_Redis implements IAdaptor
      */
     public function flush()
     {
-        return $this->getInst()->flushDB();
+        return $this->_getInst()->flushDB();
     }
+
+
+    /** @var \Redis */
+    private $_nInst = null;
 
     /**
      * @param Redis $Redis
      */
-    public function setInst(Redis $Redis)
+    public function _setInst(Redis $Redis)
     {
-        $this->nInst = $Redis;
+        $this->_nInst = $Redis;
     }
 
     /**
      * @return \Redis
      */
-    public function getInst()
+    public function _getInst()
     {
-        if ($this->nInst === null) {
+        if ($this->_nInst === null) {
             throw new \RuntimeException('[Cache] ; Inst is not set before');
         }
 
-        return $this->nInst;
+        return $this->_nInst;
     }
 }

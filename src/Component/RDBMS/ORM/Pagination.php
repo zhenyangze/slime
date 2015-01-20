@@ -37,39 +37,17 @@ class Pagination
     public $mCBError;
 
     /**
-     * @var REQ
-     */
-    protected $REQ;
-
-    /**
-     * @var Url
-     */
-    protected $URL;
-
-    /**
-     * @var RESP
-     */
-    protected $RESP;
-
-    /**
-     * @param \Slime\Component\Http\REQ  $REQ
-     * @param \Slime\Component\Http\RESP $RESP
-     * @param int                        $iNumPerPage
-     * @param string                     $sPageVar
-     * @param mixed                      $mCBRender
-     * @param mixed                      $mCBError
+     * @param int    $iNumPerPage
+     * @param string $sPageVar
+     * @param mixed  $mCBRender
+     * @param mixed  $mCBError
      */
     public function __construct(
-        $REQ,
-        $RESP,
         $iNumPerPage,
         $sPageVar = 'page',
         $mCBRender = null,
         $mCBError = null
     ) {
-        $this->REQ         = $REQ;
-        $this->URL         = new Url($REQ->getUrl());
-        $this->RESP        = $RESP;
         $this->iNumPerPage = $iNumPerPage;
         $this->sPageVar    = $sPageVar;
         $this->mCBRender   = $mCBRender === null ? self::$aCBRender : $mCBRender;
@@ -86,11 +64,15 @@ class Pagination
      */
     public function generate($Model, $nSQLCommonSEL = null, $mCBForCount = null, $mCBForList = null)
     {
+        $REQ  = $this->_getREQ();
+        $RESP = $this->_getRESP();
+        $Url  = $this->_getURL();
+
         # number per page
         $iNumPerPage = max(1, $this->iNumPerPage);
 
         # current page
-        $iCurrentPage = (int)$this->REQ->getG($this->sPageVar);
+        $iCurrentPage = (int)$REQ->getG($this->sPageVar);
 
         if ($nSQLCommonSEL === null) {
             $nSQLCommonSEL = $Model->SQL_SEL();
@@ -103,10 +85,10 @@ class Pagination
         # get pagination data
         $RS = self::doPagination($iItem, $iNumPerPage, $iCurrentPage);
         if (!empty($RS['__error__'])) {
-            call_user_func($this->mCBError, $RS, $this->sPageVar, $this->REQ, $this->URL, $this->RESP);
+            call_user_func($this->mCBError, $RS, $this->sPageVar, $REQ, $Url, $RESP);
             return false;
         }
-        $sPage = call_user_func($this->mCBRender, $RS, $this->sPageVar, $this->REQ, $this->URL, $this->RESP);
+        $sPage = call_user_func($this->mCBRender, $RS, $this->sPageVar, $REQ, $Url, $RESP);
 
         # get list data
         $SQL_SEL_List = clone $nSQLCommonSEL;
@@ -270,5 +252,82 @@ class Pagination
         return new \ArrayObject(
             array('__error__' => 0, 'pre' => $iPre, 'list' => $aResult, 'next' => $iNext, 'page_count' => $iTotalPage)
         );
+    }
+
+
+    /**
+     * @var null|REQ
+     */
+    private $_nREQ;
+
+    /**
+     * @var null|Url
+     */
+    private $_nURL;
+
+    /**
+     * @var null|RESP
+     */
+    private $_nRESP;
+
+    /**
+     * @param REQ $REQ
+     */
+    public function _setREQ(REQ $REQ)
+    {
+        $this->_nREQ = $REQ;
+    }
+
+    /**
+     * @return REQ
+     *
+     * @throws \RuntimeException
+     */
+    public function _getREQ()
+    {
+        if ($this->_nREQ === null) {
+            throw new \RuntimeException('[Pagination] ; REQ is not set before');
+        }
+        return $this->_nREQ;
+    }
+
+    /**
+     * @param RESP $RESP
+     */
+    public function _setRESP(RESP $RESP)
+    {
+        $this->_nRESP = $RESP;
+    }
+
+    /**
+     * @return RESP
+     *
+     * @throws \RuntimeException
+     */
+    public function _getRESP()
+    {
+        if ($this->_nRESP === null) {
+            throw new \RuntimeException('[Pagination] ; RESP is not set before');
+        }
+        return $this->_nRESP;
+    }
+
+    /**
+     * @return Url
+     */
+    public function _getURL()
+    {
+        if ($this->_nURL === null) {
+            $this->_nURL = new Url($this->_getREQ()->getUrl());
+        }
+        return $this->_nURL;
+    }
+
+
+    public function __sleep()
+    {
+        $this->_nREQ  = null;
+        $this->_nURL  = null;
+        $this->_nRESP = null;
     }
 }

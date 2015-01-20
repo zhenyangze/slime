@@ -20,9 +20,6 @@ class Adaptor_RDB extends Adaptor_ABS
     /** @var array */
     protected $aCachedData = null;
 
-    /** @var null|Engine */
-    protected $nEngine;
-
     /**
      * @param string $sTable
      * @param string $sFieldKey
@@ -33,20 +30,6 @@ class Adaptor_RDB extends Adaptor_ABS
         $this->sTable  = $sTable;
         $this->sFieldK = $sFieldKey;
         $this->sFieldV = $sFieldValue;
-    }
-
-    public function setEngine(Engine $Engine)
-    {
-        $this->nEngine = $Engine;
-    }
-
-    public function getEngine()
-    {
-        if ($this->nEngine === null) {
-            throw new \RuntimeException('[Config] ; Engine is not set before');
-        }
-
-        return $this->nEngine;
     }
 
     /**
@@ -60,7 +43,7 @@ class Adaptor_RDB extends Adaptor_ABS
     public function get($sKey, $mDefault = null, $bForce = false)
     {
         if ($this->aCachedData === null) {
-            $aArr              = $this->getEngine()->Q(SQL_SELECT::SEL($this->sTable));
+            $aArr              = $this->_getEngine()->Q(SQL_SELECT::SEL($this->sTable));
             $this->aCachedData = empty($aArr) ?
                 array() : Arr::changeIndexToKVMap($aArr, $this->sFieldK, $this->sFieldV);
         }
@@ -73,5 +56,23 @@ class Adaptor_RDB extends Adaptor_ABS
         }
 
         return $this->parse($this->aCachedData[$sKey], $mDefault, $bForce);
+    }
+
+
+    /** @var null|Engine */
+    private $_nEngine = null;
+
+    public function _setEngine(Engine $Engine)
+    {
+        $this->_nEngine = $Engine;
+    }
+
+    public function _getEngine()
+    {
+        if ($this->_nEngine === null) {
+            throw new \RuntimeException('[Config] ; Engine is not set before');
+        }
+
+        return $this->_nEngine;
     }
 }

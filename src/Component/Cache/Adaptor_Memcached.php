@@ -11,16 +11,11 @@ use Slime\Component\NoSQL\Memcached\Memcached;
  */
 class Adaptor_Memcached implements IAdaptor
 {
-    /**
-     * @var \Memcached
-     */
-    protected $nInst = null;
-
     public function __call($sMethod, $aParam)
     {
         return empty($aParam) ?
-            $this->getInst()->$sMethod() :
-            call_user_func_array(array($this->getInst(), $sMethod), $aParam);
+            $this->_getInst()->$sMethod() :
+            call_user_func_array(array($this->_getInst(), $sMethod), $aParam);
     }
 
     /**
@@ -30,7 +25,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function get($sKey)
     {
-        return $this->getInst()->get($sKey);
+        return $this->_getInst()->get($sKey);
     }
 
     /**
@@ -42,7 +37,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function set($sKey, $mValue, $iExpire)
     {
-        return $this->getInst()->set($sKey, $mValue, $iExpire);
+        return $this->_getInst()->set($sKey, $mValue, $iExpire);
     }
 
     /**
@@ -52,7 +47,7 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function delete($sKey)
     {
-        return $this->getInst()->delete($sKey);
+        return $this->_getInst()->delete($sKey);
     }
 
     /**
@@ -60,26 +55,32 @@ class Adaptor_Memcached implements IAdaptor
      */
     public function flush()
     {
-        return $this->getInst()->flush();
+        return $this->_getInst()->flush();
     }
+
+
+    /**
+     * @var \Memcached
+     */
+    private $_nInst = null;
 
     /**
      * @param Memcached $Memcached
      */
-    public function setInst(Memcached $Memcached)
+    public function _setInst(Memcached $Memcached)
     {
-        $this->nInst = $Memcached;
+        $this->_nInst = $Memcached;
     }
 
     /**
      * @return \Memcached
      */
-    public function getInst()
+    public function _getInst()
     {
-        if ($this->nInst === null) {
+        if ($this->_nInst === null) {
             throw new \RuntimeException('[Cache] ; Inst is not set before');
         }
 
-        return $this->nInst;
+        return $this->_nInst;
     }
 }

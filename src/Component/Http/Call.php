@@ -37,9 +37,6 @@ class Call
 
     protected $aPreCookie = array();
 
-    /** @var null|Event */
-    protected $nEV;
-
     /**
      * @param int $iConnTimeoutMS
      * @param int $iTimeoutMS
@@ -222,7 +219,7 @@ class Call
 
         curl_setopt_array($rCurl, $aOpt);
 
-        $nEV = $this->getEvent();
+        $nEV = $this->_getEvent();
         if ($nEV === null) {
             $this->mRS = curl_exec($rCurl);
         } else {
@@ -319,20 +316,24 @@ class Call
         $this->aPreCookie = $aTidy;
     }
 
+
+    /** @var null|Event */
+    private $_nEV = null;
+
     /**
      * @param Event $nEV
      */
-    public function setEvent(Event $nEV)
+    public function _setEvent(Event $nEV)
     {
-        $this->nEV = $nEV;
+        $this->_nEV = $nEV;
     }
 
     /**
      * @return null|Event
      */
-    public function getEvent()
+    public function _getEvent()
     {
-        return $this->nEV;
+        return $this->_nEV;
     }
 }
 

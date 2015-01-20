@@ -20,7 +20,7 @@ class Packer
     /**
      * @param object $mObj         obj to be packed
      * @param array  $aAOPCallBack ['execute.before,query.after' => [function(){xxx}, 'cbFunc1'], ...]
-     * @param array $aDataMap
+     * @param array  $aDataMap
      */
     public function __construct($mObj, array $aAOPCallBack = array(), array $aDataMap = array())
     {
@@ -48,6 +48,7 @@ class Packer
 
     /**
      * do not use!!!
+     *
      * @param object $Obj
      */
     public function __setObjDanger($Obj)

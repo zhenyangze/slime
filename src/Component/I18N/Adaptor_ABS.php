@@ -1,6 +1,7 @@
 <?php
 namespace Slime\Component\I18N;
 
+use Slime\Component\Config\Adaptor_PHP;
 use Slime\Component\Config\IAdaptor as ConfAdaptor;
 
 /**
@@ -11,9 +12,6 @@ use Slime\Component\Config\IAdaptor as ConfAdaptor;
  */
 abstract class Adaptor_ABS implements IAdaptor
 {
-    /** @var null|ConfAdaptor */
-    protected $nConfigure;
-
     protected $sDefaultLang;
     protected $nsCurrentLang;
 
@@ -23,26 +21,6 @@ abstract class Adaptor_ABS implements IAdaptor
     public function __construct($sDefaultLang)
     {
         $this->sDefaultLang = $sDefaultLang;
-    }
-
-    /**
-     * @param ConfAdaptor $Configure
-     */
-    public function setConfigure(ConfAdaptor $Configure)
-    {
-        $this->nConfigure = $Configure;
-    }
-
-    /**
-     * @return ConfAdaptor
-     */
-    public function getConfigure()
-    {
-        if ($this->nConfigure === null) {
-            throw new \RuntimeException('[I18N] ; Configure is not set before');
-        }
-
-        return $this->nConfigure;
     }
 
     /**
@@ -57,6 +35,35 @@ abstract class Adaptor_ABS implements IAdaptor
      */
     public function get($sKey)
     {
-        return $this->getConfigure()->get($sKey, $sKey);
+        return $this->_getConfigure()->get($sKey, $sKey);
+    }
+
+
+    /** @var null|ConfAdaptor */
+    private $_nConfigure = null;
+
+    public function _setConfigure_PHP($sBaseDir)
+    {
+        $this->_nConfigure = new Adaptor_PHP($sBaseDir, $this->getCurrentLang(), $this->sDefaultLang);
+    }
+
+    /**
+     * @param ConfAdaptor $Configure
+     */
+    public function _setConfigure(ConfAdaptor $Configure)
+    {
+        $this->_nConfigure = $Configure;
+    }
+
+    /**
+     * @return ConfAdaptor
+     */
+    public function _getConfigure()
+    {
+        if ($this->_nConfigure === null) {
+            throw new \RuntimeException('[I18N] ; Configure is not set before');
+        }
+
+        return $this->_nConfigure;
     }
 }

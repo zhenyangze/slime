@@ -18,8 +18,6 @@ class Memcached
      */
     protected $Inst = null;
 
-    /** @var null|Event */
-    protected $nEV = null;
     /**
      * @param array $aConfig
      */
@@ -43,8 +41,8 @@ class Memcached
 
     public function __call($sMethod, $aArgv)
     {
-        $nEv = $this->getEvent();
-        if ($nEv===null) {
+        $nEv = $this->_getEvent();
+        if ($nEv === null) {
             return call_user_func_array(array($this->inst(), $sMethod), $aArgv);
         } else {
             $Local  = new \ArrayObject();
@@ -58,19 +56,23 @@ class Memcached
         }
     }
 
+
+    /** @var null|Event */
+    private $_nEV = null;
+
     /**
      * @param Event $Ev
      */
-    public function setEvent(Event $Ev)
+    public function _setEvent(Event $Ev)
     {
-        $this->nEV = $Ev;
+        $this->_nEV = $Ev;
     }
 
     /**
      * @return null|Event
      */
-    public function getEvent()
+    public function _getEvent()
     {
-        return $this->nEV;
+        return $this->_nEV;
     }
 }

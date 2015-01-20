@@ -11,9 +11,6 @@ use Slime\Component\NoSQL\Redis\Redis;
  */
 class Adaptor_Redis implements IAdaptor
 {
-    /** @var \Redis */
-    protected $nInst = null;
-
     /**
      * @param string $sLockKey
      * @param int    $iLockRetryLoopMS
@@ -32,7 +29,7 @@ class Adaptor_Redis implements IAdaptor
      */
     public function acquire($iExpire = null, $iTimeout = null)
     {
-        $Inst = $this->getInst();
+        $Inst = $this->_getInst();
 
         if ($iTimeout === 0) {
             $bRS = $Inst->setnx($this->sLockKey, 1);
@@ -67,26 +64,30 @@ class Adaptor_Redis implements IAdaptor
      */
     public function release()
     {
-        return $this->getInst()->del($this->sLockKey);
+        return $this->_getInst()->del($this->sLockKey);
     }
+
+
+    /** @var \Redis */
+    private $_nInst = null;
 
     /**
      * @param Redis $Redis
      */
-    public function setInst(Redis $Redis)
+    public function _setInst(Redis $Redis)
     {
-        $this->nInst = $Redis;
+        $this->_nInst = $Redis;
     }
 
     /**
      * @return \Redis
      */
-    public function getInst()
+    public function _getInst()
     {
-        if ($this->nInst === null) {
+        if ($this->_nInst === null) {
             throw new \RuntimeException('[Lock] ; Inst is not set before');
         }
 
-        return $this->nInst;
+        return $this->_nInst;
     }
 }

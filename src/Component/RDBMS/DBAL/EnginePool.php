@@ -16,9 +16,6 @@ class EnginePool
     /** @var Engine[] */
     protected $aEngine;
 
-    /** @var null|Event */
-    protected $nEV;
-
     /**
      * @param array $aConf see README.md
      */
@@ -37,17 +34,18 @@ class EnginePool
     public function get($sK)
     {
         if (!isset($this->aEngine[$sK])) {
-            if (!isset($this->aConf['__DB__'][$sK])) {
+            if (!isset($this->aConf[$sK])) {
                 throw new \OutOfBoundsException("[DBAL] ; Database config [$sK] is not exist");
             }
-            $Obj = new Engine(
-                $this->aConf['__DB__'][$sK],
-                isset($this->aConf['__CB_MultiServer__']) ? $this->aConf['__CB_MultiServer__'] : null,
-                isset($this->aConf['__AOP_PDO__']) ? $this->aConf['__AOP_PDO__'] : null,
-                isset($this->aConf['__AOP_STMT__']) ? $this->aConf['__AOP_STMT__'] : null
-            );
-            if (($Ev = $this->getEvent()) !== null) {
-                $Obj->setEvent($Ev);
+            $Obj = new Engine($this->aConf[$sK]);
+            if (($Ev = $this->_getEvent()) !== null) {
+                $Obj->_setEvent($Ev);
+            }
+            if (($mCB = $this->_getCBMultiServer()) !== null) {
+                $Obj->_setCBMasterSlave($mCB);
+            }
+            if (($naAOP = $this->_getAopConf()) !== null) {
+                $this->_setAopConf($naAOP);
             }
 
             $this->aEngine[$sK] = $Obj;
@@ -55,19 +53,62 @@ class EnginePool
         return $this->aEngine[$sK];
     }
 
+
+    /** @var null|Event */
+    private $_nEV = null;
+
+    /** @var mixed */
+    private $_mCBMasterSlave = null;
+
+    /** @var null|array */
+    private $_naAopConf = null;
+
     /**
-     * @param Event $EV
+     * @param Event $nEV
      */
-    public function setEvent(Event $EV)
+    public function _setEvent(Event $nEV)
     {
-        $this->nEV = $EV;
+        $this->_nEV = $nEV;
     }
 
     /**
      * @return null|Event
      */
-    public function getEvent()
+    public function _getEvent()
     {
-        return $this->nEV;
+        return $this->_nEV;
+    }
+
+    /**
+     * @param mixed $mCB
+     */
+    public function _setCBMasterSlave($mCB)
+    {
+        $this->_mCBMasterSlave = $mCB;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function _getCBMasterSlave()
+    {
+        return $this->_mCBMasterSlave;
+    }
+
+    /**
+     * @param null|array|string:__DEFAULT__ $naAopConf
+     */
+    public function _setAopConf($naAopConf)
+    {
+        $this->_naAopConf = (is_array($naAopConf) && !empty($naAopConf[0]) && !empty($naAopConf[1])) ?
+            $naAopConf : ($naAopConf === '__DEFAULT__' ? Engine::$__DFT_AOP_CONF__ : null);
+    }
+
+    /**
+     * @return null|array [0:pdo_key, 1:stmt_key]
+     */
+    public function _getAopConf()
+    {
+        return $this->_naAopConf;
     }
 }

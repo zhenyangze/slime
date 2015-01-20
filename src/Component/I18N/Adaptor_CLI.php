@@ -11,13 +11,17 @@ class Adaptor_CLI extends Adaptor_ABS
 {
     public static $aCB_GetLang = array('Slime\\Component\\I18N\\Adaptor_CLI', 'getLang');
 
+    public function __construct($sDefaultLang)
+    {
+        parent::__construct($sDefaultLang);
+        $this->_mCB = self::$aCB_GetLang;
+    }
+
     public static function getLangFromCliArgv($sDefaultLang)
     {
         $aArr = getopt('', array('lang::'));
         return empty($aArr['lang']) ? $sDefaultLang : $aArr['lang'];
     }
-
-    protected $mCB;
 
     /**
      * @return string
@@ -25,26 +29,30 @@ class Adaptor_CLI extends Adaptor_ABS
     public function getCurrentLang()
     {
         if ($this->nsCurrentLang === null) {
-            $this->nsCurrentLang = call_user_func($this->mCB, $this->sDefaultLang);
+            $this->nsCurrentLang = call_user_func($this->_getCB(), $this->sDefaultLang);
         }
 
         return $this->nsCurrentLang;
     }
 
+
+    /** @var mixed */
+    private $_mCB = null;
+
     /**
-     * @param mixed $mCB null means default [Slime\Component\I18N\Adaptor_CLI::$aCB_GetLang]
+     * @param mixed $mCB
      */
-    public function setCB($mCB = null)
+    public function _setCB($mCB)
     {
-        $this->mCB = $mCB === null ? self::$aCB_GetLang : $mCB;
+        $this->_mCB = $mCB;
     }
 
-    public function getCB()
+    public function _getCB()
     {
-        if ($this->mCB === null) {
+        if ($this->_mCB === null) {
             throw new \RuntimeException('[I18N] ; Callback for getCurrentLang is not set before');
         }
 
-        return $this->mCB;
+        return $this->_mCB;
     }
 }

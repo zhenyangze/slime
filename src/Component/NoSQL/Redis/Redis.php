@@ -23,36 +23,28 @@ class Redis
      * @var array
      */
     protected $aInstConf;
-    protected $mCB;
-
-    /**
-     * @var null|Event
-     */
-    protected $nEV = null;
 
     /**
      * @param array $aConfig
-     * @param mixed $mCB
      */
-    public function __construct(array $aConfig, $mCB = null)
+    public function __construct(array $aConfig)
     {
         $this->aInstConf = $aConfig;
-        $this->mCB       = $mCB;
     }
 
     public function __call($sMethod, $aArgv)
     {
-        $nEV = $this->getEvent();
+        $nEV = $this->_getEvent();
         if ($nEV === null) {
             return call_user_func_array(array($this->inst($sMethod), $sMethod), $aArgv);
         } else {
             $Local  = new \ArrayObject();
             $aParam = array($this, $sMethod, $aArgv, $Local);
-            $this->nEV->fire(self::EV_CALL_BEFORE, $aParam);
+            $nEV->fire(self::EV_CALL_BEFORE, $aParam);
             if (!isset($Local['__RESULT__'])) {
                 $Local['__RESULT__'] = call_user_func_array(array($this->inst($sMethod), $sMethod), $aArgv);
             }
-            $this->nEV->fire(self::EV_CALL_AFTER, $aParam);
+            $nEV->fire(self::EV_CALL_AFTER, $aParam);
             return $Local['__RESULT__'];
         }
     }
@@ -61,10 +53,10 @@ class Redis
     {
         reset($this->aInstConf);
         $sDftK = key($this->aInstConf);
-        if ($nsMethod !== null && $this->mCB !== null) {
-            $sK = call_user_func($this->mCB, $nsMethod);
-        } else {
+        if ($nsMethod === null && ($mCB = $this->_getCBMasterSlave()) === null) {
             $sK = $sDftK;
+        } else {
+            $sK = call_user_func($mCB, $nsMethod);
         }
 
         if (!isset($this->aInst[$sK])) {
@@ -99,19 +91,46 @@ class Redis
         return $this->aInst[$sK];
     }
 
+
+    /**
+     * @var null|Event
+     */
+    private $_nEV = null;
+
+    /**
+     * @var mixed
+     */
+    private $_mCBMasterSlave = null;
+
     /**
      * @param Event $EV
      */
-    public function setEvent(Event $EV)
+    public function _setEvent(Event $EV)
     {
-        $this->nEV = $EV;
+        $this->_nEV = $EV;
     }
 
     /**
      * @return null|Event
      */
-    public function getEvent()
+    public function _getEvent()
     {
-        return $this->nEV;
+        return $this->_nEV;
+    }
+
+    /**
+     * @param mixed $mCB
+     */
+    public function _setCBMasterSlave($mCB)
+    {
+        $this->_mCBMasterSlave = $mCB;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function _getCBMasterSlave()
+    {
+        return $this->_mCBMasterSlave;
     }
 }

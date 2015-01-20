@@ -99,24 +99,37 @@ class Context
         }
         $aArr = $this->aComponentConfig[$sName];
 
-        if (!empty($aArr['params']) && !empty($aArr['parse_params'])) {
+        if (!empty($aArr['parse_params']) && !empty($aArr['params'])) {
             $aArr['params'] = $this->parse($aArr['params']);
         }
+
         if ($naParam !== null) {
             $aArr['params'] = $naParam + $aArr['params'];
             ksort($aArr['params']);
         }
-        if (isset($aArr['creator'])) {
-            $Obj = call_user_func_array(
-                array($aArr['class'], $aArr['creator']),
-                empty($aArr['params']) ? array() : $aArr['params']
-            );
-        } else {
+        if (is_string($aArr['create'])) {
             if (empty($aArr['params'])) {
                 $Obj = new $aArr['class']();
             } else {
                 $Ref = new \ReflectionClass($aArr['class']);
                 $Obj = $Ref->newInstanceArgs($aArr['params']);
+            }
+        } else {
+            $Obj = call_user_func_array(
+                $aArr['create'],
+                empty($aArr['params']) ? array() : $aArr['params']
+            );
+        }
+        if (!empty($aArr['inject'])) {
+            foreach ($aArr['inject'] as $sK => $sV) {
+                $Obj->$sK(
+                    $sV[0]===':' ?
+                        $this->get(substr($sV, 1)) :
+                        (
+                            $sV[0]==='\\' && $sV[1]===':' ?
+                                substr($sV, 1) : $sV
+                        )
+                );
             }
         }
 

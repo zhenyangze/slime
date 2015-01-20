@@ -9,10 +9,6 @@ namespace Slime\Component\Cache;
  */
 class Adaptor_APCU implements IAdaptor
 {
-    public function __construct()
-    {
-    }
-
     /**
      * @param string $sKey
      *

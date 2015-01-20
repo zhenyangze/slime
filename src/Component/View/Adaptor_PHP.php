@@ -18,11 +18,8 @@ class Adaptor_PHP implements IAdaptor
     protected $sTpl;
     protected $aData = array();
 
-    /** @var null|Event */
-    protected $nEV = null;
-
     /**
-     * @param string|null                       $sBaseDir
+     * @param string|null $sBaseDir
      */
     public function __construct($sBaseDir = null)
     {
@@ -107,7 +104,8 @@ class Adaptor_PHP implements IAdaptor
             throw new \RuntimeException("[VIEW] ; Template file[{$sFile}] is not exist");
         }
         $aData = $this->aData;
-        if ($this->nEV) {
+        $nEV   = $this->_getEvent();
+        if ($nEV !== null) {
             $Local = new \ArrayObject(
                 array(
                     '__FILE__'     => $sFile,
@@ -116,8 +114,10 @@ class Adaptor_PHP implements IAdaptor
                     '__DATA__'     => $aData
                 )
             );
-            $this->nEV->fire(self::EV_RENDER_BEFORE, array($this, __METHOD__, array(), $Local));
+            $this->_nEV->fire(self::EV_RENDER_BEFORE, array($this, __METHOD__, array(), $Local));
         }
+
+        # for a clean env
         $cbRender = function () use ($aData, $sFile) {
             extract($this->aData);
             ob_start();
@@ -128,8 +128,8 @@ class Adaptor_PHP implements IAdaptor
         };
         $sResult  = $cbRender();
 
-        if ($this->nEV) {
-            $this->nEV->fire(self::EV_RENDER_AFTER, array($this, __METHOD__, array(), $Local));
+        if ($nEV !== null) {
+            $this->_nEV->fire(self::EV_RENDER_AFTER, array($this, __METHOD__, array(), $Local));
         }
 
         return $sResult;
@@ -161,19 +161,23 @@ class Adaptor_PHP implements IAdaptor
         return $this->sTpl;
     }
 
+
+    /** @var null|Event */
+    private $_nEV = null;
+
     /**
      * @param Event $EV
      */
-    public function setEvent(Event $EV)
+    public function _setEvent(Event $EV)
     {
-        $this->nEV = $EV;
+        $this->_nEV = $EV;
     }
 
     /**
      * @return null|Event
      */
-    public function getEvent()
+    public function _getEvent()
     {
-        return $this->nEV;
+        return $this->_nEV;
     }
 }

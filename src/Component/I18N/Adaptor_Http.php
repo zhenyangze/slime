@@ -16,39 +16,14 @@ class Adaptor_Http extends Adaptor_ABS
         '#zh-.*#' => 'zh-cn'
     );
 
-    /** @var null|REQ */
-    protected $nREQ;
-
     /**
-     * @param string $sDefaultLang
+     * @param string      $sDefaultLang
      * @param null|string $nsCookieKey
      */
     public function __construct($sDefaultLang, $nsCookieKey = null)
     {
         parent::__construct($sDefaultLang);
         $this->nsCookieKey = $nsCookieKey;
-    }
-
-    /**
-     * @param REQ $REQ
-     */
-    public function setREQ(REQ $REQ)
-    {
-        $this->nREQ = $REQ;
-    }
-
-    /**
-     * @return REQ
-     *
-     * @throws \RuntimeException
-     */
-    public function getREQ()
-    {
-        if ($this->nREQ === null) {
-            throw new \RuntimeException('[I18N] ; REQ is not set before');
-        }
-
-        return $this->nREQ;
     }
 
     /**
@@ -60,12 +35,12 @@ class Adaptor_Http extends Adaptor_ABS
             goto END;
         }
 
-        $REQ = $this->getREQ();
+        $REQ = $this->_getREQ();
 
         # from cookie
         if ($this->nsCookieKey !== null) {
             $nsLangFromC = $REQ->getC($this->nsCookieKey);
-            if ($nsLangFromC!==null) {
+            if ($nsLangFromC !== null) {
                 $this->nsCurrentLang = $nsLangFromC;
                 goto END;
             }
@@ -89,5 +64,31 @@ class Adaptor_Http extends Adaptor_ABS
 
         END:
         return $this->nsCurrentLang;
+    }
+
+
+    /** @var null|REQ */
+    private $_nREQ = null;
+
+    /**
+     * @param REQ $REQ
+     */
+    public function _setREQ(REQ $REQ)
+    {
+        $this->_nREQ = $REQ;
+    }
+
+    /**
+     * @return REQ
+     *
+     * @throws \RuntimeException
+     */
+    public function _getREQ()
+    {
+        if ($this->_nREQ === null) {
+            throw new \RuntimeException('[I18N] ; REQ is not set before');
+        }
+
+        return $this->_nREQ;
     }
 }
