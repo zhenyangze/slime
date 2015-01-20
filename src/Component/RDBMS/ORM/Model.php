@@ -132,35 +132,26 @@ class Model
 
     public $__aCachedTransAuto__ = array();
 
-    /**
-     * @param mixed $mSQL
-     */
-    public function beginTransaction($mSQL = null)
+    public function beginTransaction()
     {
-        $PDO = $this->Engine->inst($mSQL);
+        $PDO = $this->Engine->inst();
         $this->__aCachedTransAuto__[] = $PDO->getAttribute(\PDO::ATTR_AUTOCOMMIT);
         $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
         $PDO->beginTransaction();
     }
 
-    /**
-     * @param mixed $mSQL
-     */
-    public function commit($mSQL = null)
+    public function commit()
     {
-        $PDO = $this->Engine->inst($mSQL);
+        $PDO = $this->Engine->inst();
         $PDO->commit();
         if (!empty($this->__aCachedTransAuto__)) {
             $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, array_pop($this->__aCachedTransAuto__));
         }
     }
 
-    /**
-     * @param mixed $mSQL
-     */
-    public function rollback($mSQL = null)
+    public function rollback()
     {
-        $PDO = $this->Engine->inst($mSQL);
+        $PDO = $this->Engine->inst();
         $PDO->rollBack();
         if (!empty($this->__aCachedTransAuto__)) {
             $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, array_pop($this->__aCachedTransAuto__));
@@ -183,7 +174,7 @@ class Model
                 call_user_func($mCBBeforeQ, $SQL);
             }
         }
-        return $this->Engine->E($SQL) ? $this->Engine->inst($SQL)->lastInsertId() : false;
+        return $this->Engine->E($SQL) ? $this->Engine->inst()->lastInsertId() : false;
     }
 
     /**

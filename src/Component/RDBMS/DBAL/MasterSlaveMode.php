@@ -41,7 +41,7 @@ class MasterSlaveMode
         $this->nsTmp         = null;;
     }
 
-    public function run($sMethod, $aArgv)
+    public function run($nsMethod, $aArgv)
     {
         if ($this->nsTmpThisTime !== null) {
             $sRS                 = $this->nsTmpThisTime;
@@ -54,7 +54,7 @@ class MasterSlaveMode
             return $this->nsTmp;
         }
 
-        if (isset(self::$aQuery[$sMethod])) {
+        if ($nsMethod!==null && isset(self::$aQuery[$nsMethod])) {
             $m_s_SQL = $aArgv[0];
 
             if ($m_s_SQL instanceof SQL) {

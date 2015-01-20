@@ -41,11 +41,11 @@ class EnginePool
             if (($Ev = $this->_getEvent()) !== null) {
                 $Obj->_setEvent($Ev);
             }
-            if (($mCB = $this->_getCBMultiServer()) !== null) {
+            if (($mCB = $this->_getCBMasterSlave()) !== null) {
                 $Obj->_setCBMasterSlave($mCB);
             }
             if (($naAOP = $this->_getAopConf()) !== null) {
-                $this->_setAopConf($naAOP);
+                $Obj->_setAopConf($naAOP);
             }
 
             $this->aEngine[$sK] = $Obj;

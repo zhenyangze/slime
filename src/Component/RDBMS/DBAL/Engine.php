@@ -17,8 +17,8 @@ class Engine
     const EV_PDO_STMT_RUN_BEFORE = 'slime.component.rdbms.dbal.engine.pdo_stmt_run:before';
     const EV_PDO_STMT_RUN_AFTER = 'slime.component.rdbms.dbal.engine.pdo_stmt_run:after';
 
-    public static $aCBRunPDO = array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunSTMT');
-    public static $aCBRunSTMT = array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunPDO');
+    public static $aCBRunPDO = array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunPDO');
+    public static $aCBRunSTMT = array('Slime\\Component\\RDBMS\\DBAL\\Engine', 'cbRunSTMT');
 
     public static $__DFT_AOP_CONF__ = array(
         'query.before,exec.before,prepare.before',
@@ -29,6 +29,7 @@ class Engine
     {
         /** @var \Slime\Component\Event\Event $Ev */
         if (($Ev = $Packer->getVar('EV')) === null) {
+            $Packer->run($sMethod, $aArgv);
             return;
         }
 
@@ -54,6 +55,7 @@ class Engine
     {
         /** @var \Slime\Component\Event\Event $Ev */
         if (($Ev = $Packer->getVar('EV')) === null) {
+            $Packer->run($sMethod, $aArgv);
             return;
         }
 
@@ -61,7 +63,7 @@ class Engine
         $aParam = array($Obj, $sMethod, $aArgv, $Local);
         $Ev->fire(self::EV_PDO_STMT_RUN_BEFORE, $aParam);
         if (!isset($Local['__RESULT__'])) {
-            $Local['__RESULT__'] = call_user_func_array(array($Obj, $sMethod), $aArgv);
+            $Local['__RESULT__'] = $Packer->run($sMethod, $aArgv);
         }
         $Ev->fire(self::EV_PDO_STMT_RUN_AFTER, $aParam);
 
@@ -93,23 +95,28 @@ class Engine
     }
 
     /**
-     * @param string $sMethod
+     * @param string $nsMethod
      * @param array  $aArgv
      *
      * @return \PDO
      *
      * @throws \OutOfBoundsException
      */
-    public function inst($sMethod, array $aArgv = array())
+    public function inst($nsMethod = null, array $aArgv = array())
     {
         $sK = ($mCB = $this->_getCBMasterSlave()) === null ?
             $this->sDefaultInstKey :
-            call_user_func($mCB, $sMethod, $aArgv);
+            call_user_func($mCB, $nsMethod, $aArgv);
 
         //@todo check aInst.sK 存活状态
         if (!isset($this->aInst[$sK])) {
             $aCFG      = $this->aInstConf[$sK];
-            $OBJ       = new \PDO($aCFG['dsn'], $aCFG['username'], $aCFG['password'], $aCFG['options']);
+            $OBJ       = new \PDO(
+                $aCFG['dsn'],
+                isset($aCFG['username']) ? $aCFG['username'] : null,
+                isset($aCFG['password']) ? $aCFG['password'] : null,
+                isset($aCFG['options']) ? $aCFG['options'] : null
+            );
             $nEv       = $this->_getEvent();
             $naAopConf = $this->_getAopConf();
 
@@ -178,7 +185,7 @@ class Engine
      */
     public function prepare($soSQL)
     {
-        return $this->inst(__METHOD__, func_get_args())->prepare((string)$soSQL);
+        return $this->inst('prepare', func_get_args())->prepare((string)$soSQL);
     }
 
     /**
@@ -188,7 +195,7 @@ class Engine
      */
     public function query($soSQL)
     {
-        return $this->inst(__METHOD__, func_get_args())->query((string)$soSQL);
+        return $this->inst('query', func_get_args())->query((string)$soSQL);
     }
 
     /**
@@ -198,7 +205,7 @@ class Engine
      */
     public function exec($soSQL)
     {
-        return $this->inst(__METHOD__, func_get_args())->exec((string)$soSQL);
+        return $this->inst('exec', func_get_args())->exec((string)$soSQL);
     }
 
 
@@ -232,7 +239,7 @@ class Engine
      */
     public function _setCBMasterSlave($mCB)
     {
-        $this->_mCBMasterSlave = $mCB;
+        $this->_mCBMasterSlave = is_object($mCB) ? array($mCB, 'run') : $mCB;
     }
 
     /**

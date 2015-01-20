@@ -83,7 +83,7 @@ class Url
         if ($bParsePath && isset($aBlock['path'])) {
             $aBlock['path'] = explode('/', ltrim($aBlock['path'], '/'));
         }
-        if ($bParseQuery) {
+        if ($bParseQuery && !empty($aBlock['query'])) {
             parse_str($aBlock['query'], $aBlock['query']);
         }
 

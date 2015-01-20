@@ -72,7 +72,7 @@ class Pagination
         $iNumPerPage = max(1, $this->iNumPerPage);
 
         # current page
-        $iCurrentPage = (int)$REQ->getG($this->sPageVar);
+        $iCurrentPage = ($sPageNum = $REQ->getG($this->sPageVar)) === null ? 1 : (int)$sPageNum;
 
         if ($nSQLCommonSEL === null) {
             $nSQLCommonSEL = $Model->SQL_SEL();

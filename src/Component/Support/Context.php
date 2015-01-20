@@ -98,6 +98,9 @@ class Context
             }
         }
         $aArr = $this->aComponentConfig[$sName];
+        if (empty($aArr['create'])) {
+            throw new \RuntimeException('[CTX] ; field [create] can not found in config');
+        }
 
         if (!empty($aArr['parse_params']) && !empty($aArr['params'])) {
             $aArr['params'] = $this->parse($aArr['params']);
@@ -109,9 +112,9 @@ class Context
         }
         if (is_string($aArr['create'])) {
             if (empty($aArr['params'])) {
-                $Obj = new $aArr['class']();
+                $Obj = new $aArr['create']();
             } else {
-                $Ref = new \ReflectionClass($aArr['class']);
+                $Ref = new \ReflectionClass($aArr['create']);
                 $Obj = $Ref->newInstanceArgs($aArr['params']);
             }
         } else {
@@ -120,6 +123,7 @@ class Context
                 empty($aArr['params']) ? array() : $aArr['params']
             );
         }
+
         if (!empty($aArr['inject'])) {
             foreach ($aArr['inject'] as $sK => $sV) {
                 $Obj->$sK(

@@ -66,7 +66,7 @@ class Writer_WebPage implements IWriter
             $sResult = <<<HTML
     <style>
     #_sf_debug_block {position: absolute; top:0; right:0; background-color: $sColor; width: 20px; height: 20px; cursor: pointer; z-index: 9999}
-    #_sf_debug {position: absolute; top:20px; right:0; background-color: #696969; width: 700px; color: #dcdcdc; display: none; z-index: 9999}
+    #_sf_debug {position: absolute; top:20px; right:0; background-color: #696969; width: 90%; color: #dcdcdc; display: none; z-index: 9999}
     #_sf_debug ul,#_sf_debug li {margin:0;padding:0}
     #_sf_debug li {list-style-type:none}
     #_sf_debug_nav li {display: inline-block; padding:5px 10px; background-color: #00008b; cursor: pointer;}
@@ -124,11 +124,13 @@ HTML;
 document.getElementById('_sf_debug_block').click();
 </script>
 HTML;
-
             }
         } else {
-            $aData   = $this->aData;
-            $sResult = require $this->sDebugLayer;
+            $sDebugLayer = $this->sDebugLayer;
+            $cbRender = function ($aData) use($sDebugLayer) {
+                require $sDebugLayer;
+            };
+            $cbRender($this->aData);
         }
 
         echo $sResult;
