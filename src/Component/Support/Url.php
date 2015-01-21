@@ -29,6 +29,14 @@ class Url
     }
 
     /**
+     * @return int
+     */
+    public function getBlockCount()
+    {
+        return count($this->aBlock);
+    }
+
+    /**
      * @param string $sK
      * @param mixed  $mV
      *
