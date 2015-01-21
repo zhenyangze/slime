@@ -25,7 +25,11 @@ class Url
      */
     public function getPathBlock($niIndex = null)
     {
-        return $niIndex === null ? $this->aBlock['path'] : (isset($this->aBlock[$niIndex]) ? $this->aBlock[$niIndex] : null);
+        return $niIndex === null ?
+            $this->aBlock['path'] :
+            (
+                isset($this->aBlock['path'][$niIndex]) ? $this->aBlock['path'][$niIndex] : null
+            );
     }
 
     /**
