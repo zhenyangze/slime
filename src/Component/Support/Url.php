@@ -23,17 +23,17 @@ class Url
      *
      * @return string|null
      */
-    public function getBlock($niIndex = null)
+    public function getPathBlock($niIndex = null)
     {
-        return $niIndex === null ? $this->aBlock : (isset($this->aBlock[$niIndex]) ? $this->aBlock[$niIndex] : null);
+        return $niIndex === null ? $this->aBlock['path'] : (isset($this->aBlock[$niIndex]) ? $this->aBlock[$niIndex] : null);
     }
 
     /**
      * @return int
      */
-    public function getBlockCount()
+    public function getPathBlockCount()
     {
-        return count($this->aBlock);
+        return count($this->aBlock['path']);
     }
 
     /**
@@ -98,11 +98,15 @@ class Url
     public static function parse($sUrl, $bParsePath = true, $bParseQuery = true)
     {
         $aBlock = parse_url($sUrl);
-        if ($bParsePath && isset($aBlock['path'])) {
-            $aBlock['path'] = explode('/', ltrim($aBlock['path'], '/'));
+        if ($bParsePath) {
+            $aBlock['path'] = isset($aBlock['path']) ? explode('/', ltrim($aBlock['path'], '/')) : array();
         }
-        if ($bParseQuery && !empty($aBlock['query'])) {
-            parse_str($aBlock['query'], $aBlock['query']);
+        if ($bParseQuery) {
+            if (isset($aBlock['query'])) {
+                parse_str($aBlock['query'], $aBlock['query']);
+            } else {
+                $aBlock['query'] = array();
+            }
         }
 
         return $aBlock;
