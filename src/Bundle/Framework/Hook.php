@@ -29,16 +29,7 @@ class Hook
     public static function preLog($B, $Local)
     {
         $Local['__START_TIME__'] = microtime(true);
-        if (($REQ = $B->CTX->getIgnore('REQ'))!==null && $REQ instanceof REQ) {
-            $sLog = sprintf('[SYSTEM] ; system run start ; url : %s ; ip : %s',
-                $REQ->getUrl(), $REQ->guessClientIP()
-            );
-        } elseif (!empty(($aArgv = $B->CTX->getIgnore('aArgv')))) {
-            $sLog = sprintf('[SYSTEM] ; system run start ; argv : %s', json_encode($aArgv));
-        } else {
-            $sLog = sprintf('[SYSTEM] ; system run start');
-        }
-        $B->Log->info($sLog);
+        $B->Log->info('[SYSTEM] ; system run start');
     }
 
     /**
@@ -56,9 +47,20 @@ class Hook
      */
     public static function destroyLog($B, $Local)
     {
+        if (($REQ = $B->CTX->getIgnore('REQ'))!==null && $REQ instanceof REQ) {
+            $sLog = sprintf(' url : %s ; ip : %s ;',
+                $REQ->getUrl(), $REQ->guessClientIP()
+            );
+        } elseif (!empty(($aArgv = $B->CTX->getIgnore('aArgv')))) {
+            $sLog = sprintf(' argv : %s ;', json_encode($aArgv));
+        } else {
+            $sLog = '';
+        }
+
         $B->Log->info(
             sprintf(
-                '[SYSTEM] ; total count ; cost : %ss ; mem usage %s/%s ; mem top usage %s/%s',
+                '[SYSTEM] ; total info ;%s cost : %ss ; mem usage %s/%s ; mem top usage %s/%s',
+                $sLog,
                 round(microtime(true) - $Local['__START_TIME__'], 4),
                 \Slime\Component\Support\File::autoFormatSize(memory_get_usage()),
                 \Slime\Component\Support\File::autoFormatSize(memory_get_usage(true)),
