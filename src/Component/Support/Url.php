@@ -19,6 +19,16 @@ class Url
     }
 
     /**
+     * @param null|int $niIndex
+     *
+     * @return string|null
+     */
+    public function getBlock($niIndex = null)
+    {
+        return $niIndex === null ? $this->aBlock : (isset($this->aBlock[$niIndex]) ? $this->aBlock[$niIndex] : null);
+    }
+
+    /**
      * @param string $sK
      * @param mixed  $mV
      *
