@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Bundle\Framework;
 
+use Slime\Component\Http\REQ;
+
 class Hook
 {
     public static $aCB_Register = array('Slime\\Bundle\\Framework\\Hook', 'register');
@@ -27,7 +29,16 @@ class Hook
     public static function preLog($B, $Local)
     {
         $Local['__START_TIME__'] = microtime(true);
-        $B->Log->info('[SYSTEM] ; system run start');
+        if (($REQ = $B->CTX->getIgnore('REQ'))!==null && $REQ instanceof REQ) {
+            $sLog = sprintf('[SYSTEM] ; system run start ; url : %s ; ip : %s',
+                $REQ->getUrl(), $REQ->guessClientIP()
+            );
+        } elseif (!empty(($aArgv = $B->CTX->getIgnore('aArgv')))) {
+            $sLog = sprintf('[SYSTEM] ; system run start ; argv : %s', json_encode($aArgv));
+        } else {
+            $sLog = sprintf('[SYSTEM] ; system run start');
+        }
+        $B->Log->info($sLog);
     }
 
     /**
