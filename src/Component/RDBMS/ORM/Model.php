@@ -9,6 +9,7 @@ use Slime\Component\RDBMS\DBAL\SQL;
 use Slime\Component\RDBMS\DBAL\SQL_DELETE;
 use Slime\Component\RDBMS\DBAL\SQL_INSERT;
 use Slime\Component\RDBMS\DBAL\SQL_SELECT;
+use Slime\Component\RDBMS\DBAL\SQL_UPDATE;
 use Slime\Component\RDBMS\DBAL\V;
 
 /**
@@ -186,7 +187,7 @@ class Model
      */
     public function update($m_n_siPK_Condition_SQL, array $aKVData, $mCBBeforeQ = null)
     {
-        if ($m_n_siPK_Condition_SQL instanceof SQL_DELETE) {
+        if ($m_n_siPK_Condition_SQL instanceof SQL_UPDATE) {
             $SQL = $m_n_siPK_Condition_SQL;
         } else {
             $SQL = $this->SQL_UPD();
