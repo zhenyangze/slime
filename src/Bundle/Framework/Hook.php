@@ -59,7 +59,7 @@ class Hook
 
         $B->Log->info(
             sprintf(
-                '[SYSTEM] ; total info ;%s cost : %ss ; mem usage %s/%s ; mem top usage %s/%s',
+                '[SYSTEM] ; total info ;%s cost : %ss ; mem usage : %s/%s ; mem top usage : %s/%s',
                 $sLog,
                 round(microtime(true) - $Local['__START_TIME__'], 4),
                 \Slime\Component\Support\File::autoFormatSize(memory_get_usage()),
