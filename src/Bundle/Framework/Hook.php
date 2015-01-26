@@ -51,7 +51,7 @@ class Hook
             $sLog = sprintf(' url : %s ; ip : %s ;',
                 $REQ->getUrl(), $REQ->guessClientIP()
             );
-        } elseif (!empty(($aArgv = $B->CTX->getIgnore('aArgv')))) {
+        } elseif (($aArgv = $B->CTX->getIgnore('aArgv')) !== null) {
             $sLog = sprintf(' argv : %s ;', json_encode($aArgv));
         } else {
             $sLog = '';
