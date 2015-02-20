@@ -38,7 +38,7 @@ class Hook
     public static function costAfter($Obj, $sMethod, $aArg, $Local, InitBean $B, $sK)
     {
         $fCost = round(microtime(true) - $Local['__RUN_AT__'], 4);
-        $sArg = json_encode($aArg);
+        $sArg  = json_encode($aArg);
         $B->getLog()->info("[DBAL] ; method : [$sK.$sMethod] ; argv : $sArg ; cost : $fCost");
     }
 }

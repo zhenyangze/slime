@@ -18,13 +18,12 @@ class Hook
         $B->Event
             ->listen(Bootstrap::EV_PRE_RUN, self::$aCB_PreLog)
             ->listen(Bootstrap::EV_AFTER_RUN, self::$aCB_AfterLog)
-            ->listen(Bootstrap::EV_DESTROY, self::$aCB_DestroyLog)
-        ;
+            ->listen(Bootstrap::EV_DESTROY, self::$aCB_DestroyLog);
     }
 
     /**
      * @param \Slime\Framework\Bootstrap $B
-     * @param \ArrayObject                      $Local
+     * @param \ArrayObject               $Local
      */
     public static function preLog($B, $Local)
     {
@@ -34,7 +33,7 @@ class Hook
 
     /**
      * @param \Slime\Framework\Bootstrap $B
-     * @param \ArrayObject                      $Local
+     * @param \ArrayObject               $Local
      */
     public static function afterLog($B, $Local)
     {
@@ -43,11 +42,11 @@ class Hook
 
     /**
      * @param \Slime\Framework\Bootstrap $B
-     * @param \ArrayObject                      $Local
+     * @param \ArrayObject               $Local
      */
     public static function destroyLog($B, $Local)
     {
-        if (($REQ = $B->CTX->getIgnore('REQ'))!==null && $REQ instanceof REQ) {
+        if (($REQ = $B->CTX->getIgnore('REQ')) !== null && $REQ instanceof REQ) {
             $sLog = sprintf(' url : %s ; ip : %s ;',
                 $REQ->getUrl(), $REQ->guessClientIP()
             );
