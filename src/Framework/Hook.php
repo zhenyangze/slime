@@ -5,10 +5,10 @@ use Slime\Component\Http\REQ;
 
 class Hook
 {
-    public static $aCB_Register = array('Slime\\Bundle\\Framework\\Hook', 'register');
-    public static $aCB_PreLog = array('Slime\\Bundle\\Framework\\Hook', 'preLog');
-    public static $aCB_AfterLog = array('Slime\\Bundle\\Framework\\Hook', 'afterLog');
-    public static $aCB_DestroyLog = array('Slime\\Bundle\\Framework\\Hook', 'destroyLog');
+    public static $aCB_Register = array('Slime\\Framework\\Hook', 'register');
+    public static $aCB_PreLog = array('Slime\\Framework\\Hook', 'preLog');
+    public static $aCB_AfterLog = array('Slime\\Framework\\Hook', 'afterLog');
+    public static $aCB_DestroyLog = array('Slime\\Framework\\Hook', 'destroyLog');
 
     /**
      * @param \Slime\Framework\InitBean $B

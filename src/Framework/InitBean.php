@@ -25,9 +25,9 @@ class InitBean
     public $nsRouterKey;
 
     public $iHErr = E_ALL;
-    public $mHErr = array('Slime\\Bundle\\Framework\\ExtHandle', 'hError');
-    public $mHException = array('Slime\\Bundle\\Framework\\ExtHandle', 'hException');
-    public $mHUnCaught = array('Slime\\Bundle\\Framework\\ExtHandle', 'hUncaught');
+    public $mHErr = array('Slime\\Framework\\ExtHandle', 'hError');
+    public $mHException = array('Slime\\Framework\\ExtHandle', 'hException');
+    public $mHUnCaught = array('Slime\\Framework\\ExtHandle', 'hUncaught');
 
     public $nsBootstrapKey = '__BOOTSTRAP__';
 
