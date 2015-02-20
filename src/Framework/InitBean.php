@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Config\IAdaptor as Config_IAdaptor;
 use Slime\Component\Event\Event;
@@ -28,10 +28,6 @@ class InitBean
     public $mHErr = array('Slime\\Bundle\\Framework\\ExtHandle', 'hError');
     public $mHException = array('Slime\\Bundle\\Framework\\ExtHandle', 'hException');
     public $mHUnCaught = array('Slime\\Bundle\\Framework\\ExtHandle', 'hUncaught');
-
-    public $m_Log_sLogKeyInComp = 'Log';
-    /** @var \Slime\Component\Log\Logger */
-    protected $Log;
 
     public $nsBootstrapKey = '__BOOTSTRAP__';
 
@@ -164,12 +160,19 @@ class InitBean
 
     /******** run each req *******/
 
+    public static $sKeyOfCTXInGlobal = '__MAIN_CONTEXT__';
+
     /** @var Context */
     public $CTX;
 
+    public $m_Log_sLogKeyInComp = 'Log';
+
+    /** @var \Slime\Component\Log\Logger */
+    protected $Log;
+
     public function buildContext()
     {
-        $this->CTX = Context::create($this->aCTXData);
+        $this->CTX = new Context($this->aCTXData);
         $aMap      = array();
         if ($this->nsCFGKey !== null) {
             $aMap[$this->nsCFGKey] = $this->CFG;
@@ -183,6 +186,9 @@ class InitBean
         if (!empty($aMap)) {
             $this->CTX->bindMulti($aMap);
         }
+
+        # set in global
+        $GLOBALS[self::$sKeyOfCTXInGlobal] = $this->CTX;
 
         return $this;
     }

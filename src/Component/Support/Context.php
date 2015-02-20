@@ -9,45 +9,17 @@ namespace Slime\Component\Support;
  */
 class Context
 {
-    /** @var Context[] */
-    protected static $aInst;
-
-    /**
-     * @param array $aComponentConfig
-     *
-     * @return Context
-     */
-    public static function create($aComponentConfig)
-    {
-        self::$aInst[] = $Inst = new static($aComponentConfig);
-        return $Inst;
-    }
-
-    /**
-     * @return Context
-     */
-    public static function inst()
-    {
-        return current(self::$aInst);
-    }
-
-    public static function destroy()
-    {
-        array_pop(self::$aInst);
-        end(self::$aInst);
-    }
-
     protected $aData = array();
-    protected $aComponentConfig = array();
+    protected $aObjInitConfig = array();
     protected $aCB = array();
     protected $CFG = null;
 
     /**
-     * @param array $aComponentConfig
+     * @param array $aObjInitConfig
      */
-    private function __construct(array $aComponentConfig)
+    public function __construct(array $aObjInitConfig)
     {
-        $this->aComponentConfig = $aComponentConfig;
+        $this->aObjInitConfig = $aObjInitConfig;
     }
 
     public function __get($sName)
@@ -90,14 +62,14 @@ class Context
      */
     public function make($sName, array $naParam = null, $bDoNotThrowException = false)
     {
-        if (!isset($this->aComponentConfig[$sName])) {
+        if (!isset($this->aObjInitConfig[$sName])) {
             if ($bDoNotThrowException) {
                 return null;
             } else {
                 throw new \OutOfBoundsException("[CTX] ; [$sName] can not found in config");
             }
         }
-        $aArr = $this->aComponentConfig[$sName];
+        $aArr = $this->aObjInitConfig[$sName];
         if (empty($aArr['create'])) {
             throw new \RuntimeException('[CTX] ; field [create] can not found in config');
         }
@@ -129,10 +101,7 @@ class Context
                 $Obj->$sK(
                     $sV[0]===':' ?
                         $this->get(substr($sV, 1)) :
-                        (
-                            $sV[0]==='\\' && $sV[1]===':' ?
-                                substr($sV, 1) : $sV
-                        )
+                        ($sV[0]==='\\' && $sV[1]===':' ? substr($sV, 1) : $sV)
                 );
             }
         }

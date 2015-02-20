@@ -25,7 +25,7 @@ class Adaptor_RDB extends Adaptor_ABS
      * @param string $sFieldKey
      * @param string $sFieldValue
      */
-    public function __construct($sTable, $sFieldKey = 'key', $sFieldValue = 'value')
+    public function __construct($sTable, $sFieldKey = 'keyword', $sFieldValue = 'data')
     {
         $this->sTable  = $sTable;
         $this->sFieldK = $sFieldKey;

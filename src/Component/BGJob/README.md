@@ -5,9 +5,9 @@
         <?php
         require '/your_path_of_psr4_autoload/autoload.php';
         
-        $Q = new \Slime\Bundle\BGJob\Queue_SysMsg(dirname(__FILE__));
+        $Q = new \Slime\BGJob\Queue_SysMsg(dirname(__FILE__));
         $Log = new \Slime\Component\Log\Logger(array('STDFD' => array('@STDFD')), Slime\Component\Log\Logger::LEVEL_INFO);
-        \Slime\Bundle\BGJob\Daemon::run($Q, $Log);
+        \Slime\BGJob\Daemon::run($Q, $Log);
         ?>
 
 2. 创建 push.php
@@ -15,7 +15,7 @@
         <?php
         require '/your_path_of_psr4_autoload/autoload.php';
 
-        $Q = new \Slime\Bundle\BGJob\Queue_SysMsg(dirname(__FILE__));
+        $Q = new \Slime\BGJob\Queue_SysMsg(dirname(__FILE__));
         for ($i=0;$i<30;$i++) {
             $Q->push('~/test.php');
         }

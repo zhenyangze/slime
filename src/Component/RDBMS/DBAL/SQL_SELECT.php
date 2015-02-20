@@ -97,7 +97,8 @@ class SQL_SELECT extends SQL
     protected function parseField()
     {
         if (empty($this->naField)) {
-            return $this->naDFTField === null ? '*' : '`' . implode('`,`', $this->naDFTField) . '`';
+            return $this->naDFTField === null ?
+                '*' : $this->sQuote . implode("{$this->sQuote},{$this->sQuote}", $this->naDFTField) . $this->sQuote;
         }
         $aField = array();
         foreach ($this->naField as $mItem) {
@@ -108,7 +109,8 @@ class SQL_SELECT extends SQL
                 }
             }
 
-            $aField[] = is_string($mItem) && strpos($mItem, '.') === false ? "`$mItem`" : (string)$mItem;
+            $aField[] = is_string($mItem) && strpos($mItem, '.') === false ?
+                "{$this->sQuote}$mItem{$this->sQuote}" : (string)$mItem;
         }
         return implode(',', $aField);
     }
@@ -127,7 +129,8 @@ class SQL_SELECT extends SQL
                     $this->m_n_Bind = $mItem->Bind;
                 }
             }
-            $aGroupBy[] = is_string($mItem) && strpos($mItem, '.') === false ? "`$mItem`" : (string)$mItem;
+            $aGroupBy[] = is_string($mItem) && strpos($mItem, '.') === false ?
+                "{$this->sQuote}$mItem{$this->sQuote}" : (string)$mItem;
         }
         return implode(',', $aGroupBy);
     }

@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\BGJob;
+namespace Slime\Component\BGJob;
 
 /**
  * Interface IQueue

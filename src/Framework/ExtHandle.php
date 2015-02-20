@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Support\Context;
 

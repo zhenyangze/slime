@@ -26,6 +26,23 @@ class Factory
     protected $aM = array();
 
     /**
+     * @param Item | CItem | Group | null $mData
+     *
+     * @return bool
+     */
+    public static function isEmpty($mData)
+    {
+        if ($mData === null ||
+            $mData instanceof CItem ||
+            ($mData instanceof Group && $mData->count() == 0)
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * @param array $aConf model conf
      */
     public function __construct(array $aConf)
@@ -143,24 +160,6 @@ class Factory
     {
         return $this->bCMode ? new CItem() : null;
     }
-
-    /**
-     * @param Item | CItem | Group | null $mData
-     *
-     * @return bool
-     */
-    public static function mEmpty($mData)
-    {
-        if ($mData === null ||
-            $mData instanceof CItem ||
-            ($mData instanceof Group && $mData->count() == 0)
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     /** @var null|EnginePool */
     private $_nEnginePool = null;

@@ -49,7 +49,7 @@ class SQL_UPDATE extends SQL
             }
 
             if (strpos($sK, '.') === false) {
-                $sK = "`$sK`";
+                $sK = "{$this->sQuote}$sK{$this->sQuote}";
             }
 
             $aTidy[] = "$sK = " . (is_string($mV) ? "'$mV'" : (string)$mV);

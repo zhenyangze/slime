@@ -1,7 +1,7 @@
 <?php
 namespace Slime\Component\MultiJob;
 
-class MultiJob
+class MultiProcess
 {
     /**
      * @param null|mixed $mCBMainInit
@@ -62,6 +62,8 @@ class MultiJob
                 $iCurChild--;
             }
         }
+
+        //@todo 超时控制?
     }
 }
 

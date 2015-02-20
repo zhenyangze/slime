@@ -1,11 +1,11 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 /**
  * Class Controller_Cli
  * Slime 内置控制器基类
  *
- * @package Slime\Bundle\Framework
+ * @package Slime\Framework
  * @author  smallslime@gmail.com
  */
 abstract class Controller_ABS

@@ -1,10 +1,10 @@
 <?php
-namespace Slime\Bundle\BGJob;
+namespace Slime\Component\BGJob;
 
 /**
  * Class Queue_Redis
  *
- * @package Slime\Bundle\Framework\BGJob
+ * @package Slime\Framework\BGJob
  * @author  smallslime@gmail.com
  */
 class Queue_Redis implements IQueue

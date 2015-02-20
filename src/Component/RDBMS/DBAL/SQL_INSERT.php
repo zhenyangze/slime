@@ -120,7 +120,7 @@ class SQL_INSERT extends SQL
 
         $aTidy = array();
         foreach ($this->naKey as $mItem) {
-            $aTidy[] = is_string($mItem) && strpos($mItem, '.') === false ? "`$mItem`" : (string)$mItem;
+            $aTidy[] = is_string($mItem) && strpos($mItem, '.') === false ? "{$this->sQuote}$mItem{$this->sQuote}" : (string)$mItem;
         }
 
         return '(' . implode(',', $aTidy) . ')';

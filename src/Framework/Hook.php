@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Http\REQ;
 
@@ -11,7 +11,7 @@ class Hook
     public static $aCB_DestroyLog = array('Slime\\Bundle\\Framework\\Hook', 'destroyLog');
 
     /**
-     * @param \Slime\Bundle\Framework\InitBean $B
+     * @param \Slime\Framework\InitBean $B
      */
     public static function register($B)
     {
@@ -23,7 +23,7 @@ class Hook
     }
 
     /**
-     * @param \Slime\Bundle\Framework\Bootstrap $B
+     * @param \Slime\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
     public static function preLog($B, $Local)
@@ -33,7 +33,7 @@ class Hook
     }
 
     /**
-     * @param \Slime\Bundle\Framework\Bootstrap $B
+     * @param \Slime\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
     public static function afterLog($B, $Local)
@@ -42,7 +42,7 @@ class Hook
     }
 
     /**
-     * @param \Slime\Bundle\Framework\Bootstrap $B
+     * @param \Slime\Framework\Bootstrap $B
      * @param \ArrayObject                      $Local
      */
     public static function destroyLog($B, $Local)

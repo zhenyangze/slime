@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Support\Context;
 
@@ -7,7 +7,7 @@ use Slime\Component\Support\Context;
  * Class Controller_Page
  * Slime 内置 Page 控制器基类
  *
- * @package Slime\Bundle\Framework
+ * @package Slime\Framework
  * @author  smallslime@gmail.com
  */
 abstract class Controller_Page extends Controller_ABS

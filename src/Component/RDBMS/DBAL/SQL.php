@@ -16,6 +16,12 @@ namespace Slime\Component\RDBMS\DBAL;
  */
 abstract class SQL
 {
+    const TYPE_MYSQL = 1;
+    const TYPE_ORACLE = 2;
+    const TYPE_SQLITE = 3;
+    const TYPE_PGSQL = 4;
+    const TYPE_OTHER = 5;
+
     /**
      * @param string|SQL_SELECT $sTable_SQLSEL
      * @param null|array        $naDFTField
@@ -79,6 +85,19 @@ abstract class SQL
 
     /** @var array */
     protected $aBindField;
+
+    protected $sQuote = '`';
+
+    protected $sSQLType = '';
+
+    /**
+     * @param $iType
+     */
+    public function setSQLType($iType)
+    {
+        $this->sSQLType = $iType;
+        //@todo change Quote
+    }
 
     /**
      * @return array
@@ -199,7 +218,7 @@ abstract class SQL
     protected function parseTable($sTable = null)
     {
         $sTable = $sTable === null ? $this->sTable : $sTable;
-        return strpos($sTable, '.') === false ? "`{$sTable}`" : $sTable;
+        return strpos($sTable, '.') === false ? "{$this->sQuote}{$sTable}{$this->sQuote}" : $sTable;
     }
 
     /**
@@ -248,7 +267,8 @@ abstract class SQL
 
             $aRS[] = sprintf(
                 '%s %s %s',
-                is_string($mItem[0]) && strpos($mItem[0], '.') === false ? "`{$mItem[0]}`" : $mItem[0],
+                is_string($mItem[0]) && strpos($mItem[0], '.') === false ?
+                    "{$this->sQuote}{$mItem[0]}{$this->sQuote}" : $mItem[0],
                 $mItem[1],
                 $sStr
             );
@@ -303,7 +323,7 @@ abstract class SQL
                 if ($mItem[0] === '-' || $mItem[0] === '+') {
                     $mItem = substr($mItem, 1);
                 }
-                $mItem   = strpos($mItem, '.') === false ? "`{$mItem}`" : $mItem;
+                $mItem   = strpos($mItem, '.') === false ? "{$this->sQuote}{$mItem}{$this->sQuote}" : $mItem;
                 $aTidy[] = "$mItem $sSort";
             } else {
                 throw new \RuntimeException('[DBAL] ; SQL order by parse error ; ' . json_encode($mItem));

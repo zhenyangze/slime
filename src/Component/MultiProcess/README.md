@@ -5,7 +5,7 @@ USAGE
 ```
 
     <?php
-    require 'MultiJob.php';
+    require 'MultiProcess.php';
 
     class Master
     {
@@ -30,7 +30,7 @@ USAGE
     (new \Slime\Component\MultiJob\MultiJob(
         array($Obj, 'init'),                   // master 初始化回调(可以为null)
         array($Obj, 'getPiece'),               // worker 获取自己需要处理的任务回调(可以为null)
-        function($aData) {                     // worker业务逻辑回调, $aData 为第二个参数回调的结果
+        function($aData) {                     // worker 业务逻辑回调, $aData 为第二个参数回调的结果
             printf(
                 "%s : %s : %s\n",
                 getmypid(),

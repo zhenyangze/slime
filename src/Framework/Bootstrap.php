@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Http\REQ;
 use Slime\Component\Http\RESP;
@@ -7,7 +7,7 @@ use Slime\Component\Http\RESP;
 /**
  * Class Bootstrap
  *
- * @package Slime\Bundle\Framework
+ * @package Slime\Framework
  */
 class Bootstrap
 {

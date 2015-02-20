@@ -1,7 +1,7 @@
 <?php
 namespace Slime\Component\RDBMS\DBAL;
 
-use Slime\Bundle\Framework\InitBean;
+use Slime\Framework\InitBean;
 use Slime\Component\Support\Sugar;
 
 /**
@@ -16,7 +16,7 @@ class Hook
     public static $aCB_CostAfter = array('Slime\\Component\\RDBMS\\DBAL\\Hook', 'costAfter');
 
     /**
-     * @param \Slime\Bundle\Framework\InitBean $B
+     * @param \Slime\Framework\InitBean $B
      */
     public static function register($B)
     {

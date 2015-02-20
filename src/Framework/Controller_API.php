@@ -1,5 +1,5 @@
 <?php
-namespace Slime\Bundle\Framework;
+namespace Slime\Framework;
 
 use Slime\Component\Http;
 use Slime\Component\Support\XML;
@@ -9,7 +9,7 @@ use Slime\Component\View;
  * Class Controller_API
  * Slime 内置Http控制器基类
  *
- * @package Slime\Bundle\Framework
+ * @package Slime\Framework
  * @author  smallslime@gmail.com
  */
 abstract class Controller_API extends Controller_ABS

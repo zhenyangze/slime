@@ -265,34 +265,6 @@ class Model
     }
 
     /**
-     * @param Condition|SQL_SELECT|null|array $m_n_aPK_Condition_SQL
-     * @param string|BindItem|array           $mOrderBy
-     * @param null|int                        $niLimit
-     * @param null|int                        $niOffset
-     * @param mixed                           $mCBBeforeQ
-     *
-     * @return Group|Item[]
-     */
-    public function findMulti(
-        $m_n_aPK_Condition_SQL = null,
-        $mOrderBy = null,
-        $niLimit = null,
-        $niOffset = null,
-        $mCBBeforeQ = null
-    ) {
-        $aaData = $this->findCustom($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset, $mCBBeforeQ);
-
-        $Group = new Group($this);
-        if (empty($aaData)) {
-            return $Group;
-        }
-        foreach ($aaData as $aRow) {
-            $Group[$aRow[$this->sPKName]] = new $this->sItemClass($aRow, $this, $Group);
-        }
-        return $Group;
-    }
-
-    /**
      * @param Condition|SQL_SELECT|null $m_n_aPK_Condition_SQL
      * @param mixed                     $mCBBeforeQ
      *
@@ -322,6 +294,34 @@ class Model
     }
 
     /**
+     * @param Condition|SQL_SELECT|null|array $m_n_aPK_Condition_SQL
+     * @param string|BindItem|array           $mOrderBy
+     * @param null|int                        $niLimit
+     * @param null|int                        $niOffset
+     * @param mixed                           $mCBBeforeQ
+     *
+     * @return Group|Item[]
+     */
+    public function findMulti(
+        $m_n_aPK_Condition_SQL = null,
+        $mOrderBy = null,
+        $niLimit = null,
+        $niOffset = null,
+        $mCBBeforeQ = null
+    ) {
+        $aaData = $this->findMultiArray($m_n_aPK_Condition_SQL, $mOrderBy, $niLimit, $niOffset, $mCBBeforeQ);
+
+        $Group = new Group($this);
+        if (empty($aaData)) {
+            return $Group;
+        }
+        foreach ($aaData as $aRow) {
+            $Group[$aRow[$this->sPKName]] = new $this->sItemClass($aRow, $this, $Group);
+        }
+        return $Group;
+    }
+
+    /**
      * @param Condition|SQL_SELECT|null $m_n_Condition_SQL
      * @param string|BindItem|array     $mOrderBy
      * @param int                       $niLimit
@@ -330,7 +330,7 @@ class Model
      *
      * @return bool|array
      */
-    public function findCustom(
+    public function findMultiArray(
         $m_n_Condition_SQL = null,
         $mOrderBy = null,
         $niLimit = null,

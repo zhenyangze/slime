@@ -232,6 +232,7 @@ class Call
             $nEV->fire(self::EV_EXEC_AFTER, $aParam);
             $this->mRS = $Local['__RESULT__'];
         }
+
         if ($this->mRS === false) {
             throw new HttpCallFailedException(
                 sprintf("[HTTP] ; call error ; url=$sUrl ; err_code=%s; err_msg=%s", curl_errno($rCurl),
@@ -272,6 +273,8 @@ class Call
                 $nsProtocol = $aBlock[0];
                 $bFirst     = true;
             } else {
+                //@todo header 100
+                //@todo add cookie header
                 $aRow = explode(':', $sRow, 2);
                 if (count($aRow) !== 2) {
                     trigger_error("[HTTP] ; Header format error[{$sRow}]", E_WARNING);
