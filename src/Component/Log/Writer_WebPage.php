@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\Log;
 
+use Slime\Component\Http\REQ;
+
 /**
  * Class Writer_WebPage
  *
@@ -9,12 +11,30 @@ namespace Slime\Component\Log;
  */
 class Writer_WebPage implements IWriter
 {
+    /** @var array */
     protected $aData = array();
-    public $bDisabled = false;
+
+    /** @var REQ */
+    protected $REQ = null;
+
+    public $nbDisabled = null;
 
     public function __construct($sDebugLayer = null)
     {
         $this->sDebugLayer = $sDebugLayer;
+    }
+
+    public function _setREQ(REQ $REQ)
+    {
+        $this->REQ = $REQ;
+    }
+
+    public function _getREQ()
+    {
+        if ($this->REQ === null) {
+            throw new \RuntimeException('[LOG] ; REQ is not set before');
+        }
+        return $this->REQ;
     }
 
     public function acceptData($aRow)
@@ -24,15 +44,14 @@ class Writer_WebPage implements IWriter
 
     public function __destruct()
     {
-        if (class_exists('\\Slime\\Component\\Support\\Context')) {
-            $REQ = \Slime\Component\Support\Context::inst()->getIgnore('REQ');
-            if ($REQ instanceof \Slime\Component\Http\REQ && $REQ->isAjax()) {
-                $this->bDisabled = true;
-            }
+        if ($this->nbDisabled === null) {
+            $this->nbDisabled = $this->_getREQ()->isAjax();
         }
-        if ($this->bDisabled || empty($this->aData)) {
+
+        if ($this->nbDisabled === true || empty($this->aData)) {
             return;
         }
+
         if ($this->sDebugLayer === null) {
             $sLi       = $sUl = '';
             $aTidyData = array();

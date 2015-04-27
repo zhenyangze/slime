@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\Http;
 
+use Slime\Component\Support\CB;
+
 /**
  * Class RESP
  *
@@ -361,5 +363,39 @@ class RESP
         } else {
             return isset($aData[$sK = (string)$nasK]) ? $aData[$sK] : null;
         }
+    }
+
+    /**
+     * @param int         $iStatus
+     * @param null|string $nsMSG
+     */
+    public function throwError($iStatus, $nsMSG = null)
+    {
+        $nErrorHandle = $this->_getErrorHandle();
+        if (empty($nErrorHandle)) {
+            $this->setStatus($iStatus)->setBody($nsMSG === null ? $this->getStatusMessage() : (string)$nsMSG);
+            return;
+        }
+
+        $nErrorHandle->call($iStatus, $nsMSG);
+    }
+
+    /** @var null|CB */
+    private $nCBErrorHandle;
+
+    /**
+     * @param CB $CB
+     */
+    public function _setErrorHandle(CB $CB)
+    {
+        $this->nCBErrorHandle = $CB;
+    }
+
+    /**
+     * @return null|CB
+     */
+    public function _getErrorHandle()
+    {
+        return $this->nCBErrorHandle;
     }
 }

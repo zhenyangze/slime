@@ -54,7 +54,8 @@ class Mode
             $iErr, $sErr
         )
         ) {
-            $RESP->setStatus(404)->setBody($sErr);
+            $RESP->throwError(404, $sErr);
+            return false;
         }
 
         return false;
@@ -73,13 +74,14 @@ class Mode
         $aBlock = Url::parse($REQ->getUrl(), true, false);
         $aPath  = $aBlock['path'];
         if (count($aPath) < 2) {
-            $RESP->setStatus(400)->setBody('Url path block count must I >= 2');
+            $RESP->throwError(400, 'size of url path blocks must be gt/eq than 2');
             return false;
         }
         $sLast = array_pop($aPath);
         $sVer  = strtoupper(array_shift($aPath));
         if (count($aPath) % 2 !== 0) {
-            $RESP->setStatus(400)->setBody('Url path block count % 2 must eq to 0');
+            $RESP->throwError(400, 'size of url path blocks must be multiple of 2');
+            return false;
         }
 
         if ($sLast == '') {
@@ -107,7 +109,8 @@ class Mode
             $aParam, $iErr, $sErr
         )
         ) {
-            $RESP->setStatus(404)->setBody($sErr);
+            $RESP->throwError(404, $sErr);
+            return false;
         }
 
         return false;
