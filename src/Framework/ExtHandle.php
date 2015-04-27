@@ -1,13 +1,11 @@
 <?php
 namespace Slime\Framework;
 
-use Slime\Component\Support\Context;
-
 class ExtHandle
 {
     public static function hUncaught(\Exception $E)
     {
-        $CTX = Context::inst();
+        $CTX = $GLOBALS[\Slime\Framework\InitBean::$sKeyOfCTXInGlobal];
         if (($Log = $CTX->getIgnore('Log')) === null) {
             var_dump($E->getMessage(), $E->getTrace());
             exit(1);
@@ -41,7 +39,7 @@ class ExtHandle
 
     public static function hException(\Exception $E)
     {
-        $CTX = Context::inst();
+        $CTX = $GLOBALS[\Slime\Framework\InitBean::$sKeyOfCTXInGlobal];
         if (($Log = $CTX->getIgnore('Log')) === null) {
             var_dump($E->getMessage(), $E->getTrace());
             exit(1);
@@ -56,7 +54,7 @@ class ExtHandle
         if ($iErrNum === E_USER_ERROR) {
             throw new \ErrorException($sStr);
         }
-        $CTX  = Context::inst();
+        $CTX = $GLOBALS[\Slime\Framework\InitBean::$sKeyOfCTXInGlobal];
         if (($Log = $CTX->getIgnore('Log')) === null) {
             echo $sStr;
             return;
