@@ -67,6 +67,8 @@ class Router
      * @param \Slime\Component\Http\REQ        $REQ
      * @param \Slime\Component\Http\RESP       $RESP
      * @param \Slime\Component\Support\Context $CTX
+     *
+     * @return bool
      */
     public function runHttp($REQ, $RESP, $CTX)
     {
@@ -111,9 +113,7 @@ class Router
             }
         }
 
-        if (!$bHit && $RESP->getStatus() === null) {
-            $RESP->setStatus(404)->setBody('None routes hit!');
-        }
+        return $bHit;
     }
 
     public function runCli($aArgv, $CTX)
