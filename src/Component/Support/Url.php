@@ -48,7 +48,11 @@ class Url
      */
     public function update($sK, $mV)
     {
-        $this->aBlock[$sK] = $mV;
+        if ($mV === null) {
+            unset($this->aBlock[$sK]);
+        } else {
+            $this->aBlock[$sK] = $mV;
+        }
 
         return $this;
     }
