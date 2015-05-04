@@ -46,7 +46,6 @@ class Bootstrap
 
     public function run($nsSAPI = null)
     {
-        # register
         $this->sAPI = $nsSAPI === null ? PHP_SAPI : $nsSAPI;
         if ($this->InitBean->mHErr !== null) {
             set_error_handler($this->InitBean->mHErr, $this->InitBean->iHErr);
@@ -54,6 +53,12 @@ class Bootstrap
         if ($this->InitBean->mHException !== null) {
             set_exception_handler($this->InitBean->mHException);
         }
+        $this->sAPI === 'cli' ? $this->runCli() : $this->runHttp();
+    }
+
+    protected function runCli()
+    {
+        # register
         $this->Log = $this->InitBean->getLog();
         if ($this->InitBean->nsBootstrapKey !== null) {
             $this->CTX->bind($this->InitBean->nsBootstrapKey, $this);
@@ -62,7 +67,12 @@ class Bootstrap
         # run
         $this->Event->fire(self::EV_PRE_RUN, $this->aParamForEV);
         try {
-            $this->sAPI === 'cli' ? $this->runCli() : $this->runHttp();
+            # build argv
+            $this->CTX->bind('aArgv', $GLOBALS['argv']);
+
+            # route & run
+            $this->Event->fire(self::EV_PRE_ROUTE, $this->aParamForEV);
+            $this->Router->runCli($GLOBALS['argv'], $this->CTX);
         } catch (\Exception $E) {
             if ($this->InitBean->mHUnCaught !== null) {
                 call_user_func($this->InitBean->mHUnCaught, $E);
@@ -70,16 +80,8 @@ class Bootstrap
             exit(1);
         }
         $this->Event->fire(self::EV_AFTER_RUN, $this->aParamForEV);
-    }
 
-    protected function runCli()
-    {
-        # build argv
-        $this->CTX->bind('aArgv', $GLOBALS['argv']);
 
-        # route & run
-        $this->Event->fire(self::EV_PRE_ROUTE, $this->aParamForEV);
-        $this->Router->runCli($GLOBALS['argv'], $this->CTX);
     }
 
     protected function runHttp()
@@ -89,13 +91,29 @@ class Bootstrap
         $RESP = new RESP($REQ->getProtocol());
         $this->CTX->bindMulti(array('REQ' => $REQ, 'RESP' => $RESP));
 
-        # route & run
-        $this->Event->fire(self::EV_PRE_ROUTE, $this->aParamForEV);
-        $this->Router->runHttp($REQ, $RESP, $this->CTX);
+        # register
+        $this->Log = $this->InitBean->getLog();
+        if ($this->InitBean->nsBootstrapKey !== null) {
+            $this->CTX->bind($this->InitBean->nsBootstrapKey, $this);
+        }
 
-        # send
-        $this->Event->fire(self::EV_HTTP_PRE_SEND, $this->aParamForEV);
-        $RESP->send();
+        # run
+        $this->Event->fire(self::EV_PRE_RUN, $this->aParamForEV);
+        try {
+            # route & run
+            $this->Event->fire(self::EV_PRE_ROUTE, $this->aParamForEV);
+            $this->Router->runHttp($REQ, $RESP, $this->CTX);
+
+            # send
+            $this->Event->fire(self::EV_HTTP_PRE_SEND, $this->aParamForEV);
+            $RESP->send();
+        } catch (\Exception $E) {
+            if ($this->InitBean->mHUnCaught !== null) {
+                call_user_func($this->InitBean->mHUnCaught, $E);
+            }
+            exit(1);
+        }
+        $this->Event->fire(self::EV_AFTER_RUN, $this->aParamForEV);
     }
 
     public function __destruct()

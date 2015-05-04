@@ -97,16 +97,25 @@ class Context
         }
 
         if (!empty($aArr['inject'])) {
-            foreach ($aArr['inject'] as $sK => $sV) {
-                $Obj->$sK(
-                    $sV[0]===':' ?
-                        $this->get(substr($sV, 1)) :
-                        ($sV[0]==='\\' && $sV[1]===':' ? substr($sV, 1) : $sV)
-                );
-            }
+            $this->inject($Obj, $aArr['inject']);
         }
 
         return isset($aArr['packer']) ? new Packer($Obj, (array)$aArr['packer']) : $Obj;
+    }
+
+    /**
+     * @param object $Obj
+     * @param array  $aData
+     */
+    public function inject($Obj, array $aData)
+    {
+        foreach ($aData as $sK => $sV) {
+            $Obj->$sK(
+                $sV[0]===':' ?
+                    (($sName = substr($sV, 1)) === '~' ? $this : $this->get($sName)):
+                    ($sV[0]==='\\' && $sV[1]===':' ? substr($sV, 1) : $sV)
+            );
+        }
     }
 
     /**

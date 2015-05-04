@@ -48,20 +48,15 @@ class Logger implements LoggerInterface
     protected $niLimit = null;
 
     /**
-     * @param array    $aWriterConf ['File' => ['@File', 'param1', 'param2'], '@FirePHP']
      * @param int      $iLogLevel
      * @param null     $sRequestID
      * @param null|int $niLimit
      */
     public function __construct(
-        array $aWriterConf,
         $iLogLevel = self::LEVEL_ALL,
         $sRequestID = null,
         $niLimit = null
     ) {
-        foreach ($aWriterConf as $sK => $aClassAndArgs) {
-            $this->aWriter[$sK] = Sugar::createObjAdaptor(__NAMESPACE__, $aClassAndArgs, 'IWriter', 'Writer_');
-        }
         $this->iLogLevel = $iLogLevel;
         $this->sGUID     = base_convert(rand(10, 99) . str_replace('.', '', round(microtime(true), 4)), 10, 32);
 
@@ -71,22 +66,20 @@ class Logger implements LoggerInterface
         }
     }
 
-    /**
-     * @param string       $sK
-     * @param null | array $aClassAndArgs
-     * @param bool         $bOnlyAdd
-     */
-    public function setWriter($sK, $aClassAndArgs = null, $bOnlyAdd = false)
+    public function __call($sMethod, $aArgv)
     {
-        if ($aClassAndArgs === null) {
-            if (isset($this->aWriter[$sK])) {
-                unset($this->aWriter[$sK]);
-            }
-        } else {
-            if (!$bOnlyAdd || !isset($this->aWriter[$sK])) {
-                $this->aWriter[$sK] = Sugar::createObjAdaptor(__NAMESPACE__, $aClassAndArgs, 'IWriter', 'Writer_');;
-            }
+        if (substr($sMethod, 0, 10) === '_setWriter' && count($aArgv) === 1) {
+            $this->setWriter(substr($sMethod, 10), $aArgv[0]);
         }
+    }
+
+    /**
+     * @param string  $sK
+     * @param IWriter $Writer
+     */
+    public function setWriter($sK, IWriter $Writer)
+    {
+        $this->aWriter[$sK] = $Writer;
     }
 
     /**

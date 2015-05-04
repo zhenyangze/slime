@@ -3,6 +3,7 @@ namespace Slime\Component\RDBMS\ORM;
 
 use Slime\Component\Event\Event;
 use Slime\Component\RDBMS\DBAL\EnginePool;
+use Slime\Component\Support\Context;
 
 /**
  * Class Factory
@@ -167,6 +168,9 @@ class Factory
     /** @var null|Event */
     private $_nEV = null;
 
+    /** @var null|Context */
+    private $_nCTX = null;
+
     /**
      * @param Event $EV
      */
@@ -203,5 +207,21 @@ class Factory
             throw new \RuntimeException('[ORM] ; EnginePool is not set before');
         }
         return $this->_nEnginePool;
+    }
+
+    /**
+     * @return null|Context
+     */
+    public function _getCTX()
+    {
+        return $this->_nCTX;
+    }
+
+    /**
+     * @param Context $CTX
+     */
+    public function _setCTX(Context $CTX)
+    {
+        $this->_nCTX = $CTX;
     }
 }

@@ -263,22 +263,6 @@ class RESP
         return $this;
     }
 
-    /**
-     * @param string   $sUrl
-     * @param null|int $niCode
-     *
-     * @return $this
-     */
-    public function setRedirect($sUrl, $niCode = null)
-    {
-        $this->addHeader('Location', $sUrl);
-        if ($niCode !== null) {
-            $this->setStatus($niCode);
-        }
-
-        return $this;
-    }
-
     public function send()
     {
         $this->sendHeader();
@@ -363,6 +347,33 @@ class RESP
         } else {
             return isset($aData[$sK = (string)$nasK]) ? $aData[$sK] : null;
         }
+    }
+
+    public function setNoCache()
+    {
+        $this->addHeader(
+            array(
+                'Pragma' => 'no-cache',
+                'Expires' => 'Sat, 26 Jul 1997 05:00:00 GMT',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate'
+            )
+        );
+    }
+
+    /**
+     * @param string   $sUrl
+     * @param null|int $niCode
+     *
+     * @return $this
+     */
+    public function setRedirect($sUrl, $niCode = null)
+    {
+        $this->addHeader('Location', $sUrl);
+        if ($niCode !== null) {
+            $this->setStatus($niCode);
+        }
+
+        return $this;
     }
 
     /**
