@@ -51,9 +51,8 @@ class Factory
         $aConf['__DEFAULT__'] = empty($aConf['__DEFAULT__']) ?
             self::$aDefaultSetting :
             array_merge(self::$aDefaultSetting, $aConf['__DEFAULT__']);
-        $this->aDFT           = $aConf['__DEFAULT__'];
-        unset($aConf['__DEFAULT__']);
-        $this->aConf = $aConf;
+        $this->aDFT  = $aConf['__DEFAULT__'];
+        $this->aConf = $aConf['__MODEL__'];
     }
 
     /**
@@ -80,18 +79,15 @@ class Factory
         }
 
         if (!isset($this->aConf[$sM])) {
-            if (!empty($this->aDFT['create_direct'])) {
+            if (!empty($this->aDFT['auto_create'])) {
                 $sMClass       = "{$this->aDFT['model_pre']}{$sM}";
                 $sItemClass    = "{$this->aDFT['item_pre']}{$sM}";
-                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
-                return $this->aM[$sM];
-            }
-            if (empty($this->aDFT['auto_create'])) {
+                return $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
+            } else {
                 throw new \OutOfBoundsException("[ORM] ; Model conf[$sM] is not exists");
             }
-        } else {
-            $naConf = $this->aConf[$sM];
         }
+        $naConf = $this->aConf[$sM];
 
         if (!isset($naConf['model'])) {
             $sMClass    = $this->aDFT['model_base'];
@@ -100,13 +96,16 @@ class Factory
             $sMClass    = "{$this->aDFT['model_pre']}{$naConf['model']}";
             $sItemClass = "{$this->aDFT['item_pre']}{$naConf['model']}";
         }
-        $this->aM[$sM] = new $sMClass(
+        $Obj = new $sMClass(
             $this, $sM, $sItemClass, $this->_getEnginePool(),
-            isset($naConf[$sM]['db']) ? $naConf[$sM]['db'] : $this->aDFT['db'],
+            isset($naConf['db']) ? $naConf['db'] : $this->aDFT['db'],
             $naConf
         );
+        if (!empty($naConf['inject']) && is_array($naConf['inject'])) {
+            $this->_getCTX()->inject($Obj, $naConf['inject']);
+        }
 
-        return $this->aM[$sM];
+        return $this->aM[$sM] = $Obj;
     }
 
     /**
