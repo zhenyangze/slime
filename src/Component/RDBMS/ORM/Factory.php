@@ -79,15 +79,18 @@ class Factory
         }
 
         if (!isset($this->aConf[$sM])) {
-            if (!empty($this->aDFT['auto_create'])) {
+            if (!empty($this->aDFT['create_direct'])) {
                 $sMClass       = "{$this->aDFT['model_pre']}{$sM}";
                 $sItemClass    = "{$this->aDFT['item_pre']}{$sM}";
-                return $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
-            } else {
+                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
+                return $this->aM[$sM];
+            }
+            if (empty($this->aDFT['auto_create'])) {
                 throw new \OutOfBoundsException("[ORM] ; Model conf[$sM] is not exists");
             }
+        } else {
+            $naConf = $this->aConf[$sM];
         }
-        $naConf = $this->aConf[$sM];
 
         if (!isset($naConf['model'])) {
             $sMClass    = $this->aDFT['model_base'];

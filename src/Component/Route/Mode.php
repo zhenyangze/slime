@@ -30,9 +30,12 @@ class Mode
         if (count($aPath) === 1) {
             array_unshift($aPath, $aSetting['default_controller']);
         }
+
         $sAction     = array_pop($aPath);
-        $sController = $aSetting['controller_pre'] .
-            implode('_', array_map(array('\\Slime\\Component\\Support\\Str', 'camel'), $aPath));
+        $sController = array_pop($aPath);
+        $sSubNS = empty($aPath) ? '' : implode('\\', array_map(array('\\Slime\\Component\\Support\\Str', 'camel'), $aPath)) . '\\';
+
+        $sController = $aSetting['controller_ns'] . $sSubNS . $aSetting['controller_pre'] . Str::camel($sController);
         if (($iPos = strrpos($sAction, '.')) === false) {
             $sExt = isset($aSetting['default_ext']) ? $aSetting['default_ext'] : null;
         } else {

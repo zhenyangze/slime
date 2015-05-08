@@ -234,7 +234,7 @@ abstract class SQL
         $aRS = array();
         foreach ($Condition->aData as $mItem) {
             if ($mItem instanceof Condition) {
-                $aRS[] = "({$mItem})";
+                $aRS[] = '(' . $this->parseCondition($mItem) . ')';
                 continue;
             }
 

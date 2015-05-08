@@ -209,7 +209,7 @@ class Item implements \ArrayAccess
         $SEL = $this->__M__->SQL_SEL();
         $SEL->where(Condition::build()->add($sPKName = $this->__M__->sPKName, '=', $this->aData[$sPKName]))
             ->limit(1);
-        if (($mData = $this->__M__->findCustom($SEL))===false || empty($mData[0])) {
+        if (($mData = $this->__M__->findMultiArray($SEL))===false || empty($mData[0])) {
             return false;
         }
 
@@ -259,6 +259,7 @@ class Item implements \ArrayAccess
      * @param string                        $sOrderBy
      * @param int                           $iLimit
      * @param int                           $iOffset
+     * @param mixed                         $mCBBeforeQ
      *
      * @return Group|Item[]
      */
@@ -267,36 +268,41 @@ class Item implements \ArrayAccess
         $m_n_Condition_SQLSEL = null,
         $sOrderBy = null,
         $iLimit = null,
-        $iOffset = null
+        $iOffset = null,
+        $mCBBeforeQ = null
     ) {
         $M = $this->__M__->Factory->get($sModel);
         if ($m_n_Condition_SQLSEL instanceof SQL_SELECT) {
-            return $M->findMulti($m_n_Condition_SQLSEL);
+            return $M->findMulti($m_n_Condition_SQLSEL, null, null, null, $mCBBeforeQ);
         }
 
         $Condition = Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$M->sPKName]);
-        if ($m_n_Condition_SQLSEL === null) {
+
+        if ($m_n_Condition_SQLSEL instanceof Condition) {
             $Condition->sub($m_n_Condition_SQLSEL);
         }
-        return $M->findMulti($Condition, $sOrderBy, $iLimit, $iOffset);
+
+        return $M->findMulti($Condition, $sOrderBy, $iLimit, $iOffset, $mCBBeforeQ);
     }
 
     /**
      * @param string                        $sModel
      * @param null | Condition | SQL_SELECT $m_n_Condition_SQLSEL
+     * @param mixed                         $mCBBeforeQ
      *
      * @return int
      */
-    public function hasManyCount($sModel, $m_n_Condition_SQLSEL = null)
+    public function hasManyCount($sModel, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
     {
         $M = $this->__M__->Factory->get($sModel);
         if ($m_n_Condition_SQLSEL instanceof SQL_SELECT) {
-            return $M->findCount($m_n_Condition_SQLSEL);
+            return $M->findCount($m_n_Condition_SQLSEL, $mCBBeforeQ);
         }
 
         $Condition = Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$M->sPKName]);
-        if ($m_n_Condition_SQLSEL === null) {
-            $Condition->sub($m_n_Condition_SQLSEL);
+
+        if ($m_n_Condition_SQLSEL instanceof Condition) {
+            $Condition->sub($m_n_Condition_SQLSEL, $mCBBeforeQ);
         }
         return $M->findCount($Condition);
     }

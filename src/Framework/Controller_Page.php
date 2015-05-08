@@ -74,10 +74,28 @@ abstract class Controller_Page extends Controller_ABS
      */
     protected function getDefaultTPL()
     {
+        $aConf = $this->aParam['__SETTING__'];
+        $sC = $this->aParam['__CONTROLLER__'];
+        if (
+            isset($aConf['controller_ns']) &&
+            ($iNSLen = strlen($aConf['controller_ns'])) &&
+            substr($sC, 0, $iNSLen) === $aConf['controller_ns']
+        ) {
+            $sC = substr($sC, $iNSLen);
+        }
+
+        if (
+            isset($aConf['controller_pre']) &&
+            ($iNSLen = strlen($aConf['controller_pre'])) &&
+            substr($sC, 0, $iNSLen) === $aConf['controller_pre']
+        ) {
+            $sC = substr($sC, $iNSLen);
+        }
+
         return sprintf(
             '%s-%s.%s',
-            str_replace($this->aParam['__SETTING__']['controller_pre'], '', $this->aParam['__CONTROLLER__']),
-            str_replace($this->aParam['__SETTING__']['action_pre'], '', $this->aParam['__ACTION__']),
+            str_replace('\\', DIRECTORY_SEPARATOR, $sC),
+            str_replace($aConf['action_pre'], '', $this->aParam['__ACTION__']),
             $this->aParam['__EXT__'] === null ? 'php' : $this->aParam['__EXT__']
         );
     }
