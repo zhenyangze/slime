@@ -109,12 +109,16 @@ class Context
      */
     public function inject($Obj, array $aData)
     {
-        foreach ($aData as $sK => $sV) {
-            $Obj->$sK(
-                $sV[0]===':' ?
-                    (($sName = substr($sV, 1)) === '~' ? $this : $this->get($sName)):
-                    ($sV[0]==='\\' && $sV[1]===':' ? substr($sV, 1) : $sV)
-            );
+        foreach ($aData as $sK => $mV) {
+            if (is_string($mV)) {
+                $Obj->$sK(
+                    $mV[0]===':' ?
+                        (($sName = substr($mV, 1)) === '~' ? $this : $this->get($sName)):
+                        ($mV[0]==='\\' && $mV[1]===':' ? substr($mV, 1) : $mV)
+                );
+            } else {
+                $Obj->$sK($mV);
+            }
         }
     }
 
