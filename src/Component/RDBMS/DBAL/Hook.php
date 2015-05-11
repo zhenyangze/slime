@@ -13,6 +13,7 @@ use Slime\Component\Support\Sugar;
 class Hook
 {
     public static $aCB_Register = array('Slime\\Component\\RDBMS\\DBAL\\Hook', 'register');
+    public static $aCB_CostBefore = array('Slime\\Component\\RDBMS\\DBAL\\Hook', 'costBefore');
     public static $aCB_CostAfter = array('Slime\\Component\\RDBMS\\DBAL\\Hook', 'costAfter');
 
     /**
@@ -22,8 +23,12 @@ class Hook
     {
         $B->Event
             ->listen(
-                array(Engine::EV_PDO_RUN_BEFORE, Engine::EV_PDO_STMT_RUN_BEFORE),
-                Sugar::$aCB_LogTime, 0, null, array($B)
+                Engine::EV_PDO_RUN_BEFORE,
+                self::$aCB_CostBefore, 0, null, array($B, 'PDO')
+            )
+            ->listen(
+                Engine::EV_PDO_STMT_RUN_BEFORE,
+                self::$aCB_CostBefore, 0, null, array($B, 'STMT')
             )
             ->listen(
                 Engine::EV_PDO_RUN_AFTER,
@@ -35,10 +40,20 @@ class Hook
             );
     }
 
+    public static function costBefore($Obj, $sMethod, $aArg, $Local, InitBean $B, $sK)
+    {
+        $sTS                 = microtime(true);
+        list($sSec, $sMS)    = explode('.', $sTS);
+        $sID                 = base64_encode(pack('LL', $sMS, $sSec));
+        $Local['__RUN_AT__'] = $sTS;
+        $Local['__ID__']     = $sID;
+        $sArg                = json_encode($aArg);
+        $B->getLog()->info("[DBAL] ; id : $sID ; method : [$sK.$sMethod] ; argv : $sArg");
+    }
+
     public static function costAfter($Obj, $sMethod, $aArg, $Local, InitBean $B, $sK)
     {
         $fCost = round(microtime(true) - $Local['__RUN_AT__'], 4);
-        $sArg  = json_encode($aArg);
-        $B->getLog()->info("[DBAL] ; method : [$sK.$sMethod] ; argv : $sArg ; cost : $fCost");
+        $B->getLog()->info("[DBAL] ; id : {$Local['__ID__']} ; finish ; cost : $fCost");
     }
 }
