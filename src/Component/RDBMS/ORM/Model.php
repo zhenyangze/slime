@@ -338,6 +338,9 @@ class Model
         $mCBBeforeQ = null
     ) {
         if ($m_n_Condition_SQL instanceof SQL_SELECT) {
+            if ($mCBBeforeQ !== null) {
+                call_user_func($mCBBeforeQ, $m_n_Condition_SQL);
+            }
             $aaData = $this->Engine->Q($m_n_Condition_SQL);
         } else {
             if (is_array($m_n_Condition_SQL)) {
