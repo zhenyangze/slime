@@ -235,24 +235,32 @@ class Item implements \ArrayAccess
 
     /**
      * @param string $sModelName
+     * @param mixed  $mCBBeforeQ
      *
      * @return Item|null
      */
-    public function hasOne($sModelName)
+    public function hasOne($sModelName, $mCBBeforeQ = null)
     {
         $M = $this->__M__->Factory->get($sModelName);
-        return $M->find(Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$this->__M__->sPKName]));
+        return $M->find(
+            Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$this->__M__->sPKName]),
+            $mCBBeforeQ
+        );
     }
 
     /**
      * @param string $sModelName
+     * @param mixed  $mCBBeforeQ
      *
      * @return Item|null
      */
-    public function belongsTo($sModelName)
+    public function belongsTo($sModelName, $mCBBeforeQ = null)
     {
         $M = $this->__M__->Factory->get($sModelName);
-        return $M->find(Condition::build()->add($M->sPKName, '=', $this->aData[$M->sFKName]));
+        return $M->find(
+            Condition::build()->add($M->sPKName, '=', $this->aData[$M->sFKName]),
+            $mCBBeforeQ
+        );
     }
 
     /**
