@@ -89,7 +89,7 @@ class Item implements \ArrayAccess
      * @param string $sModelName
      * @param array  $mValue
      *
-     * @return $this|$this[]
+     * @return Item|Item[]|Group|null
      */
     public function __call($sModelName, $mValue = array())
     {
@@ -108,21 +108,23 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                                         $sModelName
-     * @param array | \Slime\Component\RDBMS\DBAL\SQL_SELECT $aWhere_SQLSEL
-     * @param string                                         $sOrderBy
-     * @param int                                            $iLimit
-     * @param int                                            $iOffset
+     * @param string                    $sModelName
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param string                    $sOrderBy
+     * @param int                       $iLimit
+     * @param int                       $iOffset
+     * @param mixed                     $mCBBeforeQ
      *
-     * @return $this|$this[]
+     * @return Item|Item[]|Group|null
      * @throws \OutOfBoundsException
      */
     public function relation(
         $sModelName,
-        $aWhere_SQLSEL = array(),
+        $m_n_Condition_SQLSEL = null,
         $sOrderBy = null,
         $iLimit = null,
-        $iOffset = null
+        $iOffset = null,
+        $mCBBeforeQ = null
     ) {
         $mResult = null;
 
@@ -136,7 +138,7 @@ class Item implements \ArrayAccess
                 $this->$sMethod($sModelName) :
                 $this->__Group__->relation($sModelName, $this);
         } else {
-            $mResult = $this->$sMethod($sModelName, $aWhere_SQLSEL, $sOrderBy, $iLimit, $iOffset);
+            $mResult = $this->$sMethod($sModelName, $m_n_Condition_SQLSEL, $sOrderBy, $iLimit, $iOffset, $mCBBeforeQ);
         }
 
         if ($mResult === null) {
@@ -147,13 +149,14 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string $sModelName
-     * @param array  $aWhere
+     * @param string                    $sModelName
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param mixed                     $mCBBeforeQ
      *
      * @return int
      * @throws \OutOfBoundsException
      */
-    public function relationCount($sModelName, array $aWhere = array())
+    public function relationCount($sModelName, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
     {
         if (!isset($this->__M__->aRelConf[$sModelName])) {
             throw new \OutOfBoundsException("[ORM] ; Can not find relation for [$sModelName]");
@@ -165,8 +168,7 @@ class Item implements \ArrayAccess
         }
 
         $sMethod .= 'Count';
-        return $this->$sMethod($sModelName, $aWhere);
-
+        return $this->$sMethod($sModelName, $m_n_Condition_SQLSEL, $mCBBeforeQ);
     }
 
     /**
@@ -183,7 +185,7 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @return bool | null | int [null:无需更新]
+     * @return bool|null|int [null:无需更新]
      */
     public function update()
     {
@@ -209,7 +211,7 @@ class Item implements \ArrayAccess
         $SEL = $this->__M__->SQL_SEL();
         $SEL->where(Condition::build()->add($sPKName = $this->__M__->sPKName, '=', $this->aData[$sPKName]))
             ->limit(1);
-        if (($mData = $this->__M__->findMultiArray($SEL))===false || empty($mData[0])) {
+        if (($mData = $this->__M__->findMultiArray($SEL)) === false || empty($mData[0])) {
             return false;
         }
 
@@ -254,12 +256,12 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                        $sModel
-     * @param null | Condition | SQL_SELECT $m_n_Condition_SQLSEL
-     * @param string                        $sOrderBy
-     * @param int                           $iLimit
-     * @param int                           $iOffset
-     * @param mixed                         $mCBBeforeQ
+     * @param string                    $sModel
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param string                    $sOrderBy
+     * @param int                       $iLimit
+     * @param int                       $iOffset
+     * @param mixed                     $mCBBeforeQ
      *
      * @return Group|Item[]
      */
@@ -286,9 +288,9 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                        $sModel
-     * @param null | Condition | SQL_SELECT $m_n_Condition_SQLSEL
-     * @param mixed                         $mCBBeforeQ
+     * @param string                    $sModel
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param mixed                     $mCBBeforeQ
      *
      * @return int
      */
@@ -308,13 +310,13 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                        $sModelTarget
-     * @param null | Condition | SQL_SELECT $m_n_Condition_SQLSEL
-     * @param string                        $nsOrderBy
-     * @param int                           $niLimit
-     * @param int                           $niOffset
+     * @param string                    $sModelTarget
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param string                    $nsOrderBy
+     * @param int                       $niLimit
+     * @param int                       $niOffset
      *
-     * @return null|Group|Item[]
+     * @return Group|Item[]
      */
     public function hasManyThrough(
         $sModelTarget,
@@ -356,12 +358,13 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                        $sModelTarget
-     * @param null | Condition | SQL_SELECT $m_n_Condition_SQLSEL
+     * @param string                    $sModelTarget
+     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
+     * @param mixed                     $mCBBeforeQ
      *
-     * @return bool | int
+     * @return bool|int
      */
-    public function hasManyThroughCount($sModelTarget, $m_n_Condition_SQLSEL = null)
+    public function hasManyThroughCount($sModelTarget, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
     {
         $MTarget   = $this->__M__->Factory->get($sModelTarget);
         $MOrg      = $this->__M__;
@@ -381,9 +384,9 @@ class Item implements \ArrayAccess
                 ->fields("{$MTarget->sTable}.*")
                 ->where($m_n_Condition_SQLSEL);
 
-            return $MTarget->findCount($SQL);
+            return $MTarget->findCount($SQL, $mCBBeforeQ);
         } else {
-            return $MTarget->findCount($m_n_Condition_SQLSEL);
+            return $MTarget->findCount($m_n_Condition_SQLSEL, $mCBBeforeQ);
         }
     }
 
