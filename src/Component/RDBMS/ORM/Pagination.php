@@ -3,6 +3,8 @@ namespace Slime\Component\RDBMS\ORM;
 
 use Slime\Component\Http\REQ;
 use Slime\Component\Http\RESP;
+use Slime\Component\RDBMS\DBAL\Condition;
+use Slime\Component\RDBMS\DBAL\SQL_SELECT;
 use Slime\Component\Support\Url;
 
 /**
@@ -55,14 +57,14 @@ class Pagination
     }
 
     /**
-     * @param \Slime\Component\RDBMS\ORM\Model            $Model
-     * @param null|\Slime\Component\RDBMS\DBAL\SQL_SELECT $nSQLCommonSEL
-     * @param mixed                                       $mCBForCount
-     * @param mixed                                       $mCBForList
+     * @param Model            $Model
+     * @param null|SQL_SELECT|Condition $nConditionSQLSEL
+     * @param mixed       $mCBForCount
+     * @param mixed     $mCBForList
      *
      * @return bool|array [page_string, List_Group, total_item, page_count, current_page, number_per_page]
      */
-    public function generate($Model, $nSQLCommonSEL = null, $mCBForCount = null, $mCBForList = null)
+    public function generate($Model, $nConditionSQLSEL = null, $mCBForCount = null, $mCBForList = null)
     {
         $REQ  = $this->_getREQ();
         $RESP = $this->_getRESP();
@@ -74,10 +76,15 @@ class Pagination
         # current page
         $iCurrentPage = ($sPageNum = $REQ->getG($this->sPageVar)) === null ? 1 : (int)$sPageNum;
 
-        if ($nSQLCommonSEL === null) {
-            $nSQLCommonSEL = $Model->SQL_SEL();
+        if ($nConditionSQLSEL instanceof SQL_SELECT) {
+            $OrgSEL = $nConditionSQLSEL;
+        } else {
+            $OrgSEL = $Model->SQL_SEL();
+            if ($nConditionSQLSEL instanceof Condition) {
+                $OrgSEL->where($nConditionSQLSEL);
+            }
         }
-        $SQL_SEL_Total = clone $nSQLCommonSEL;
+        $SQL_SEL_Total = clone $OrgSEL;
 
         # get total
         $iItem = $Model->findCount($SQL_SEL_Total, $mCBForCount);
@@ -91,7 +98,7 @@ class Pagination
         $sPage = call_user_func($this->mCBRender, $RS, $this->sPageVar, $REQ, $Url, $RESP);
 
         # get list data
-        $SQL_SEL_List = clone $nSQLCommonSEL;
+        $SQL_SEL_List = clone $OrgSEL;
         $SQL_SEL_List->limit($iNumPerPage)->offset(($iCurrentPage - 1) * $iNumPerPage);
         $List = $Model->findMulti($SQL_SEL_List, null, null, null, $mCBForList);
 
