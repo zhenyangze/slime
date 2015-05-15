@@ -159,7 +159,7 @@ class REQ
      */
     public function isAjax()
     {
-        return strtolower($this->getHeader('X_Requested_With')) === 'xmlhttprequest';
+        return strtolower($this->getHeader('X-Requested-With')) === 'xmlhttprequest';
     }
 
     /**
