@@ -95,6 +95,20 @@ class Bind implements \Countable, \ArrayAccess
     }
 
     /**
+     * @param SQL $SQL
+     *
+     * @return array
+     */
+    public function getBindMap($SQL)
+    {
+        $aMap = array();
+        foreach ($SQL->getBindFields() as $sKey) {
+            $aMap[$sKey] = $this->aBind[$sKey]->mV;
+        }
+        return $aMap;
+    }
+
+    /**
      * @param string $sK
      *
      * @return mixed

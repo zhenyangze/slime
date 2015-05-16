@@ -79,6 +79,9 @@ class Engine
     /** @var Packer */
     protected $OBJSTMTPacker;
 
+    /** @var SQL */
+    protected $LastSQL;
+
     public function __get($sVar)
     {
         return $this->$sVar;
@@ -185,6 +188,7 @@ class Engine
      */
     public function prepare($soSQL)
     {
+        $this->LastSQL = $soSQL;
         return $this->inst('prepare', func_get_args())->prepare((string)$soSQL);
     }
 
@@ -195,6 +199,7 @@ class Engine
      */
     public function query($soSQL)
     {
+        $this->LastSQL = $soSQL;
         return $this->inst('query', func_get_args())->query((string)$soSQL);
     }
 
@@ -205,9 +210,17 @@ class Engine
      */
     public function exec($soSQL)
     {
+        $this->LastSQL = $soSQL;
         return $this->inst('exec', func_get_args())->exec((string)$soSQL);
     }
 
+    public function getLastSQL()
+    {
+        $sStr = (string)$this->LastSQL;
+        $aBindData = $this->LastSQL instanceof SQL && $this->LastSQL->m_n_Bind ?
+            $this->LastSQL->m_n_Bind->getBindMap($this->LastSQL) : array();
+        return array($sStr, $aBindData);
+    }
 
     /** @var null|Event */
     private $_nEV = null;
