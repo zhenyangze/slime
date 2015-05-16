@@ -34,6 +34,6 @@ class Hook
     public static function costAfter($Obj, $sMethod, $aArg, $Local, InitBean $B)
     {
         $fCost = round(microtime(true) - $Local['__RUN_AT__'], 4);
-        $B->getLog()->info("[VIEW] ; tpl : {$Local['__TPL__']} ; cost : $fCost");
+        $B->getLog()->info("[VIEW] ; tpl : {$Local['__FILE__']} ; cost : $fCost");
     }
 }

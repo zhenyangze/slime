@@ -120,7 +120,7 @@ class Group implements \ArrayAccess, \Iterator, \Countable
         if ($noModelItem === null) {
             return $this->aRelation[$sModelName];
         } else {
-            return $this->aRelation[$sModelName][$sFK];
+            return isset($this->aRelation[$sModelName][$sFK]) ? $this->aRelation[$sModelName][$sFK] : $this->Model->Factory->newNull();
         }
     }
 
