@@ -53,7 +53,7 @@ class Redis
     {
         reset($this->aInstConf);
         $sDftK = key($this->aInstConf);
-        if ($nsMethod === null && ($mCB = $this->_getCBMasterSlave()) === null) {
+        if ($nsMethod === null || ($mCB = $this->_getCBMasterSlave()) === null) {
             $sK = $sDftK;
         } else {
             $sK = call_user_func($mCB, $nsMethod);
