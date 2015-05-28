@@ -42,12 +42,13 @@ class Bind implements \Countable, \ArrayAccess
     /**
      * @param string $sK
      * @param mixed  $mV
+     * @param mixed  $mAttr
      *
      * @return $this
      */
-    public function set($sK, $mV)
+    public function set($sK, $mV, $mAttr = null)
     {
-        $this->aBind[$sK] = new BindItem($this, $sK, $mV);
+        $this->aBind[$sK] = new BindItem($this, $sK, $mV, $mAttr);
 
         return $this;
     }
