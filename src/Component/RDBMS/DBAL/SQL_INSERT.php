@@ -32,6 +32,10 @@ class SQL_INSERT extends SQL
     protected $niType = null;
     protected $nWhere = null;
 
+    protected $naKey;
+    protected $aData = array();
+    protected $m_sValue_SQLSEL = null;
+
     /**
      * @param int          $iType   SQL_INSERT::TYPE_IGNORE / SQL_INSERT::TYPE_UPDATE / SQL_INSERT::TYPE_REPLACE
      * @param null | array $naWhere if iType is TYPE_UPDATE , declare as condition(kv map)
@@ -47,9 +51,6 @@ class SQL_INSERT extends SQL
 
         return $this;
     }
-
-    protected $naKey;
-    protected $aData = array();
 
     /**
      * @param array $aKV
@@ -78,6 +79,14 @@ class SQL_INSERT extends SQL
         $this->naKey = $aKey;
 
         return $this;
+    }
+
+    /**
+     * @param string|SQL_SELECT $m_sValue_SQLSEL
+     */
+    public function valueDirect($m_sValue_SQLSEL)
+    {
+        $this->m_sValue_SQLSEL = $m_sValue_SQLSEL;
     }
 
     protected function parseData()
@@ -128,14 +137,24 @@ class SQL_INSERT extends SQL
 
     public function build()
     {
-        $this->m_n_sSQL = sprintf(
-            "%s INTO %s%s VALUES (%s)%s",
-            $this->niType === self::TYPE_IGNORE ? 'INSERT IGNORE' : ($this->niType === self::TYPE_REPLACE ? 'REPLACE' : 'INSERT'),
-            $this->parseTable(),
-            ($nsKey = $this->parseKey()) === null ? '' : " $nsKey",
-            $this->parseData(),
-            $this->niType === self::TYPE_UPDATE ?
-                (' ON DUPLICATE KEY UPDATE ' . $this->parseCondition($this->nWhere)) : ''
-        );
+        if ($this->m_sValue_SQLSEL===null) {
+            $this->m_n_sSQL = sprintf(
+                "%s INTO %s%s VALUES (%s)%s",
+                $this->niType === self::TYPE_IGNORE ? 'INSERT IGNORE' : ($this->niType === self::TYPE_REPLACE ? 'REPLACE' : 'INSERT'),
+                $this->parseTable(),
+                ($nsKey = $this->parseKey()) === null ? '' : " $nsKey",
+                $this->parseData(),
+                $this->niType === self::TYPE_UPDATE ?
+                    (' ON DUPLICATE KEY UPDATE ' . $this->parseCondition($this->nWhere)) : ''
+            );
+        } else {
+            $this->m_n_sSQL = sprintf(
+                "%s INTO %s %s",
+                $this->niType === self::TYPE_IGNORE ? 'INSERT IGNORE' : ($this->niType === self::TYPE_REPLACE ? 'REPLACE' : 'INSERT'),
+                $this->parseTable(),
+                $this->m_sValue_SQLSEL
+            );
+        }
+
     }
 }
