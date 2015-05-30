@@ -37,34 +37,13 @@ class SQL_UPDATE extends SQL
         return $this;
     }
 
-    protected function parseData()
-    {
-        $aTidy = array();
-        foreach ($this->aMap as $sK => $mV) {
-            if ($mV instanceof BindItem) {
-                $this->aBindField[$mV->sK] = $mV->sK;
-                if ($this->m_n_Bind === null) {
-                    $this->m_n_Bind = $mV->Bind;
-                }
-            }
-
-            if (strpos($sK, '.') === false) {
-                $sK = "{$this->sQuote}$sK{$this->sQuote}";
-            }
-
-            $aTidy[] = "$sK = " . (is_string($mV) ? "'$mV'" : (string)$mV);
-        }
-
-        return implode(',', $aTidy);
-    }
-
     public function build()
     {
         $this->m_n_sSQL = sprintf(
             'UPDATE %s%s SET %s%s%s%s%s',
             $this->parseTable(),
             ($nsJoin = $this->parseJoin()) === null ? '' : " $nsJoin",
-            $this->parseData(),
+            $this->parseUpdateMap($this->aMap),
             $this->nWhere === null ? '' : ' WHERE ' . $this->parseCondition($this->nWhere),
             ($nsOrder = $this->parseOrder()) === null ? '' : " ORDER BY {$nsOrder}",
             $this->niLimit === null ? '' : " LIMIT {$this->niLimit}",

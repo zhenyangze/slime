@@ -35,6 +35,7 @@ class SQL_INSERT extends SQL
     protected $naKey;
     protected $aData = array();
     protected $m_sValue_SQLSEL = null;
+    protected $aUpdateMap = array();
 
     /**
      * @param int          $iType   SQL_INSERT::TYPE_IGNORE / SQL_INSERT::TYPE_UPDATE / SQL_INSERT::TYPE_REPLACE
@@ -87,6 +88,11 @@ class SQL_INSERT extends SQL
     public function valueDirect($m_sValue_SQLSEL)
     {
         $this->m_sValue_SQLSEL = $m_sValue_SQLSEL;
+    }
+
+    public function updateData($aMap)
+    {
+        $this->aUpdateMap = $aMap;
     }
 
     protected function parseData()
@@ -145,7 +151,7 @@ class SQL_INSERT extends SQL
                 ($nsKey = $this->parseKey()) === null ? '' : " $nsKey",
                 $this->parseData(),
                 $this->niType === self::TYPE_UPDATE ?
-                    (' ON DUPLICATE KEY UPDATE ' . $this->parseCondition($this->nWhere)) : ''
+                    (' ON DUPLICATE KEY UPDATE ' . $this->parseUpdateMap($this->aUpdateMap)) : ''
             );
         } else {
             $this->m_n_sSQL = sprintf(

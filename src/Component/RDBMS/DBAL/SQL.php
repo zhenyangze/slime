@@ -357,4 +357,25 @@ abstract class SQL
             return $mV === null ? null : (int)$mV;
         }
     }
+
+    protected function parseUpdateMap($aMap)
+    {
+        $aTidy = array();
+        foreach ($aMap as $sK => $mV) {
+            if ($mV instanceof BindItem) {
+                $this->aBindField[$mV->sK] = $mV->sK;
+                if ($this->m_n_Bind === null) {
+                    $this->m_n_Bind = $mV->Bind;
+                }
+            }
+
+            if (strpos($sK, '.') === false) {
+                $sK = "{$this->sQuote}$sK{$this->sQuote}";
+            }
+
+            $aTidy[] = "$sK = " . (is_string($mV) ? "'$mV'" : (string)$mV);
+        }
+
+        return implode(',', $aTidy);
+    }
 }
