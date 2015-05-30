@@ -88,7 +88,9 @@ class Group implements \ArrayAccess, \Iterator, \Countable
             $sThisPK      = $this->aModelItem[$ItemNew[$this->Model->sFKName]][$this->Model->sPKName];
             $aQ[$sThisPK] = $ItemNew;
         }
-
+        if (!isset($aQ[$sPK])) {
+            return $this->Model->Factory->newNull();
+        }
         return $aQ[$sPK];
     }
 
