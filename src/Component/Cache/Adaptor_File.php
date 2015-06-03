@@ -44,7 +44,7 @@ class Adaptor_File implements IAdaptor
             return null;
         }
 
-        $aData = file($sKey);
+        $aData = file($sFile);
         if (count($aData) !== 2) {
             return null;
         }
