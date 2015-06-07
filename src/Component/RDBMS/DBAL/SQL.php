@@ -304,7 +304,9 @@ abstract class SQL
 
         $aTidy = array();
         foreach ($this->naOrder as $mItem) {
-            if ($mItem instanceof BindItem) {
+            if ($mItem instanceof V) {
+                return (string)$mItem;
+            } elseif ($mItem instanceof BindItem) {
                 if ($this->m_n_Bind === null) {
                     $this->m_n_Bind = $mItem->Bind;
                 }
