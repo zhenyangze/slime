@@ -167,12 +167,15 @@ class SQL_SELECT extends SQL
      */
     protected function parseTable($nsTable = null)
     {
-        $sParsedTable = parent::parseTable($nsTable);
-        if ($this->nsAlias !== null) {
-            $sParsedTable = '(' . $sParsedTable . ') AS ' . $this->nsAlias;
+        if ($this->sTable_SQLSEL instanceof SQL_SELECT) {
+            $sParsedTable = '(' . (string)$this->sTable_SQLSEL . ')';
+            if ($this->sTable_SQLSEL->nsAlias !== null) {
+                $sParsedTable .= ' AS ' . $this->sQuote . $this->sTable_SQLSEL->nsAlias . $this->sQuote;
+            }
+            return $sParsedTable;
+        } else {
+            return parent::parseTable($nsTable);
         }
-
-        return $sParsedTable;
     }
 
     public function build()
