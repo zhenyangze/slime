@@ -35,12 +35,17 @@ class SQL_SELECT extends SQL
     protected $niLockType = null;
 
     /**
-     * @param string $sTable
+     * @var null|string
+     */
+    protected $nsAlias = null;
+
+    /**
+     * @param string $sTable_SQLSEL
      * @param null|array $naDFTField
      */
-    public function __construct($sTable, array $naDFTField = null)
+    public function __construct($sTable_SQLSEL, array $naDFTField = null)
     {
-        $this->sTable = $sTable;
+        $this->sTable_SQLSEL = $sTable_SQLSEL;
         if ($naDFTField !== null) {
             $this->naDFTField = $naDFTField;
         }
@@ -81,6 +86,17 @@ class SQL_SELECT extends SQL
     public function having($Having)
     {
         $this->nHaving = $Having;
+        return $this;
+    }
+
+    /**
+     * @param string $sAlias
+     *
+     * @return $this
+     */
+    public function alias($sAlias)
+    {
+        $this->nsAlias = $sAlias;
         return $this;
     }
 
@@ -142,6 +158,21 @@ class SQL_SELECT extends SQL
         }
 
         return $this->niLockType === 1 ? 'FOR UPDATE' : 'LOCK IN SHARE MODE';
+    }
+
+    /**
+     * @param null|string $nsTable
+     *
+     * @return string
+     */
+    protected function parseTable($nsTable = null)
+    {
+        $sParsedTable = parent::parseTable($nsTable);
+        if ($this->nsAlias !== null) {
+            $sParsedTable = '(' . $sParsedTable . ') AS ' . $this->nsAlias;
+        }
+
+        return $sParsedTable;
     }
 
     public function build()

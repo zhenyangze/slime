@@ -7,7 +7,7 @@ namespace Slime\Component\RDBMS\DBAL;
  * @package Slime\Component\RDBMS\DBAL
  * @author  smallslime@gmail.com
  *
- * @property-read string           $sTable
+ * @property-read string           $sTable_SQLSEL
  * @property-read null | array     $naJoin
  * @property-read null | Condition $nWhere
  * @property-read null | array     $naOrder
@@ -66,7 +66,7 @@ abstract class SQL
     //----------------
 
     /** @var string */
-    protected $sTable;
+    protected $sTable_SQLSEL;
     /** @var null|array */
     protected $naJoin = null;
     /** @var null|Condition */
@@ -138,11 +138,11 @@ abstract class SQL
     }
 
     /**
-     * @param string $sTable
+     * @param string $sTable_SQLSEL
      */
-    public function __construct($sTable)
+    public function __construct($sTable_SQLSEL)
     {
-        $this->sTable = $sTable;
+        $this->sTable_SQLSEL = $sTable_SQLSEL;
     }
 
     public function __get($sK)
@@ -214,10 +214,14 @@ abstract class SQL
         return $this;
     }
 
-
-    protected function parseTable($sTable = null)
+    /**
+     * @param null|string $nsTable
+     *
+     * @return string
+     */
+    protected function parseTable($nsTable = null)
     {
-        $sTable = $sTable === null ? $this->sTable : $sTable;
+        $sTable = $nsTable === null ? (string)$this->sTable_SQLSEL : $nsTable;
         return strpos($sTable, '.') === false ? "{$this->sQuote}{$sTable}{$this->sQuote}" : $sTable;
     }
 
