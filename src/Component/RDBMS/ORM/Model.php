@@ -171,9 +171,9 @@ class Model
             $SQL = $m_aKVData_SQL;
         } else {
             $SQL = $this->SQL_INS()->values($m_aKVData_SQL);
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
+        }
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
         }
         return $this->Engine->E($SQL) ? $this->Engine->inst()->lastInsertId() : false;
     }
@@ -198,9 +198,9 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
+        }
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
         }
         $SQL->setMulti($aKVData);
 
@@ -226,9 +226,9 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
+        }
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
         }
 
         return $this->Engine->E($SQL);
@@ -244,7 +244,6 @@ class Model
     {
         if ($m_n_siPK_Condition_SQL instanceof SQL_SELECT) {
             $SQL = $m_n_siPK_Condition_SQL;
-            $SQL->limit(1);
         } else {
             $SQL = $this->SQL_SEL();
             if ($m_n_siPK_Condition_SQL !== null) {
@@ -254,10 +253,10 @@ class Model
                         Condition::build()->add($this->sPKName, '=', $m_n_siPK_Condition_SQL)
                 );
             }
-            $SQL->limit(1);
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
+        }
+        $SQL->limit(1);
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
         }
         $mItem = $this->Engine->Q($SQL);
 
@@ -284,9 +283,9 @@ class Model
                 }
             }
             $SQL->fields(V::make('count(1) AS total'))->limit(1);
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
+        }
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
         }
         $aItem = $this->Engine->Q($SQL);
 
@@ -338,10 +337,7 @@ class Model
         $mCBBeforeQ = null
     ) {
         if ($m_n_Condition_SQL instanceof SQL_SELECT) {
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $m_n_Condition_SQL);
-            }
-            $aaData = $this->Engine->Q($m_n_Condition_SQL);
+            $SQL = $m_n_Condition_SQL;
         } else {
             if (is_array($m_n_Condition_SQL)) {
                 $m_n_Condition_SQL = Condition::build()->add($this->sPKName, 'IN', $m_n_Condition_SQL);
@@ -365,11 +361,11 @@ class Model
             if ($niOffset !== null) {
                 $SQL->offset($niOffset);
             }
-            if ($mCBBeforeQ !== null) {
-                call_user_func($mCBBeforeQ, $SQL);
-            }
-            $aaData = $this->Engine->Q($SQL);
         }
+        if ($mCBBeforeQ !== null) {
+            call_user_func($mCBBeforeQ, $SQL);
+        }
+        $aaData = $this->Engine->Q($SQL);
 
         return $aaData;
     }
