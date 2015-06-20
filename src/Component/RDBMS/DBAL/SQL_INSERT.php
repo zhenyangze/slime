@@ -15,6 +15,19 @@ class SQL_INSERT extends SQL
     protected $nSEL = null;
 
     /**
+     * @param string|SQL_SELECT $sTable_SQLSEL
+     *
+     * @return $this
+     */
+    public function rebuild($sTable_SQLSEL)
+    {
+        parent::rebuild($sTable_SQLSEL);
+        $this->nSEL = null;
+
+        return $this;
+    }
+
+    /**
      * @param SQL_SELECT $SEL
      *
      * @return $this

@@ -52,6 +52,19 @@ class SQL_SELECT extends SQL
     }
 
     /**
+     * @param string|SQL_SELECT $sTable_SQLSEL
+     *
+     * @return $this
+     */
+    public function rebuild($sTable_SQLSEL)
+    {
+        parent::rebuild($sTable_SQLSEL);
+        $this->naGroupBy = $this->naField = $this->nHaving = $this->naDFTField = $this->niLockType = $this->nsAlias = null;
+
+        return $this;
+    }
+
+    /**
      * @param string | V $sField_V
      *
      * multi param as param one

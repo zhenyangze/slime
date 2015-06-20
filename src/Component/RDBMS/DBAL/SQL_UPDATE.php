@@ -12,6 +12,19 @@ class SQL_UPDATE extends SQL
     protected $aMap = array();
 
     /**
+     * @param string|SQL_SELECT $sTable_SQLSEL
+     *
+     * @return $this
+     */
+    public function rebuild($sTable_SQLSEL)
+    {
+        parent::rebuild($sTable_SQLSEL);
+        $this->aMap = array();
+
+        return $this;
+    }
+
+    /**
      * @param string $sK
      * @param mixed  $mV string | int | float | Val
      *

@@ -84,7 +84,7 @@ abstract class SQL
     protected $m_n_Bind = null;
 
     /** @var array */
-    protected $aBindField;
+    protected $aBindField = array();
 
     protected $sQuote = '`';
 
@@ -138,11 +138,25 @@ abstract class SQL
     }
 
     /**
-     * @param string $sTable_SQLSEL
+     * @param string|SQL_SELECT $sTable_SQLSEL
      */
     public function __construct($sTable_SQLSEL)
     {
         $this->sTable_SQLSEL = $sTable_SQLSEL;
+    }
+
+    /**
+     * @param string|SQL_SELECT $sTable_SQLSEL
+     *
+     * @return $this
+     */
+    public function rebuild($sTable_SQLSEL)
+    {
+        $this->sTable_SQLSEL = $sTable_SQLSEL;
+        $this->naJoin        = $this->nWhere = $this->naOrder = $this->niLimit = $this->m_n_sSQL = $this->m_n_Bind = null;
+        $this->aBindField    = array();
+
+        return $this;
     }
 
     public function __get($sK)
