@@ -61,10 +61,10 @@ class Hook
                 '[SYSTEM] ; total info ;%s cost : %ss ; mem usage : %s/%s ; mem top usage : %s/%s',
                 $sLog,
                 round(microtime(true) - $Local['__START_TIME__'], 4),
-                \Slime\Component\Support\File::autoFormatSize(memory_get_usage()),
-                \Slime\Component\Support\File::autoFormatSize(memory_get_usage(true)),
-                \Slime\Component\Support\File::autoFormatSize(memory_get_peak_usage()),
-                \Slime\Component\Support\File::autoFormatSize(memory_get_peak_usage(true))
+                \Slime\Component\Support\File::sizeFormat(memory_get_usage()),
+                \Slime\Component\Support\File::sizeFormat(memory_get_usage(true)),
+                \Slime\Component\Support\File::sizeFormat(memory_get_peak_usage()),
+                \Slime\Component\Support\File::sizeFormat(memory_get_peak_usage(true))
             )
         );
     }

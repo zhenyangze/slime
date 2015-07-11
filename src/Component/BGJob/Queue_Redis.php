@@ -25,16 +25,17 @@ class Queue_Redis implements IQueue
      * @param int    $iErr
      * @param string $sErr
      *
-     * @return string|bool
+     * @return mixed
      */
     public function pop(&$iErr = 0, &$sErr = '')
     {
         $mRS = $this->Redis->brPop($this->sQueueName);
         if ($mRS === false) {
             $iErr = 1;
-            $sErr = 'Pop Failed';
-            $mRS  = false;
+            $sErr = "[BGJob] ; pop from redis[$this->sQueueName] failed";
+            return false;
         }
+
         return $mRS;
     }
 
@@ -45,14 +46,17 @@ class Queue_Redis implements IQueue
      * @param int    $iErr
      * @param string $sErr
      *
-     * @return void
+     * @return bool
      */
     public function push($sJob, &$iErr = 0, &$sErr = '')
     {
         $bRS = $this->Redis->lPush($this->sQueueName, $sJob);
         if ($bRS === false) {
             $iErr = 1;
-            $sErr = 'Push Failed';
+            $sErr = "[BGJob] ; pop from redis[$this->sQueueName] failed";
+            return false;
         }
+
+        return true;
     }
 }

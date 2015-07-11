@@ -15,7 +15,7 @@ interface IQueue
      * @param int    $iErr
      * @param string $sErr
      *
-     * @return string|bool
+     * @return mixed
      */
     public function pop(&$iErr = 0, &$sErr = '');
 
@@ -26,7 +26,7 @@ interface IQueue
      * @param int    $iErr
      * @param string $sErr
      *
-     * @return void
+     * @return bool
      */
     public function push($sJob, &$iErr = 0, &$sErr = '');
 }

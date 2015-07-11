@@ -24,15 +24,15 @@ class Queue_SysMsg implements IQueue
      */
     public function pop(&$iErr = 0, &$sErr = '')
     {
-        msg_receive($this->MSGQueue, 1, $iMSGType, 1024, $sMessage, true, MSG_IPC_NOWAIT, $iErrorCode);
+        msg_receive($this->MSGQueue, 1, $iMSGType, 1024, $mRS, true, MSG_IPC_NOWAIT, $iErrorCode);
 
         if ($iErrorCode != 0) {
             $iErr     = 1;
-            $sErr     = sprintf('[msg_receive][%d]', $iErrorCode);
-            $sMessage = false;
+            $sErr     = sprintf('[BGJob] ; pop form sys_msg failed [%d]', $iErrorCode);
+            return false;
         }
 
-        return $sMessage;
+        return $mRS;
     }
 
     /**

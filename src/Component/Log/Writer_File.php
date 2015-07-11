@@ -1,6 +1,8 @@
 <?php
 namespace Slime\Component\Log;
 
+use Slime\Component\Support\File;
+
 /**
  * Class Writer_File
  *
@@ -57,7 +59,9 @@ class Writer_File implements IWriter
                 $this->iBuf++;
             }
         } else {
-            file_put_contents($sFilePath, $sStr, FILE_APPEND | LOCK_EX);
+            if (File::makeFileWithContent($sStr, $sFilePath, FILE_APPEND | LOCK_EX, $sErr) !== 0) {
+                trigger_error($sErr, E_USER_WARNING);
+            }
         }
     }
 
