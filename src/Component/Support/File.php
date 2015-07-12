@@ -79,7 +79,7 @@ class File
         if (($iErr = File::makeFile($sFilePath, $niMode, $sErr)) > 0) {
             return $iErr;
         }
-        if (file_put_contents($sFilePath, $sFileContent) === false) {
+        if (file_put_contents($sFilePath, $sFileContent, $niMode) === false) {
             $sErr = "[File] ; write [$sFilePath] failed";
             return 3;
         }

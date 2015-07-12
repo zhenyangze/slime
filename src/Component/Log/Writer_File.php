@@ -69,7 +69,7 @@ class Writer_File implements IWriter
     {
         foreach ($this->aBuf as $sFilePath => $aBufData) {
             if (!empty($aBufData)) {
-                file_put_contents($sFilePath, implode('', $aBufData), FILE_APPEND | LOCK_EX);
+                File::makeFileWithContent($sFilePath, implode('', $aBufData), FILE_APPEND | LOCK_EX);
                 $this->aBuf[$sFilePath] = array();
             }
         }
