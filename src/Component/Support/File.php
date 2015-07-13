@@ -38,6 +38,7 @@ class File
             $niMode = 0777;
         }
 
+        # file_path is dir : create dir
         if (substr($sFilePath, -1) === DIRECTORY_SEPARATOR) {
             if (!mkdir($sFilePath, $niMode, true)) {
                 $sErr = "[File] ; create dir[$sFilePath] failed";
@@ -46,6 +47,7 @@ class File
             return 0;
         }
 
+        # file_path is relative path file : create file
         if (($iPos = strrpos($sFilePath, DIRECTORY_SEPARATOR)) === false) {
             if (!touch($sFilePath)) {
                 $sErr = "[File] ; create file[$sFilePath] failed";
@@ -54,7 +56,9 @@ class File
             return 0;
         }
 
-        if (!mkdir($sDir = substr($sFilePath, 0, $iPos), $niMode, true)) {
+        # file_path is file : find dir and create dir ; find file and create file
+        $sDir = substr($sFilePath, 0, $iPos);
+        if (!file_exists($sDir) && !mkdir($sDir, $niMode, true)) {
             $sErr = "[File] ; create dir[$sDir] failed";
             return 1;
         }
