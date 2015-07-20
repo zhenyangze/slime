@@ -1,8 +1,6 @@
 <?php
 namespace Slime\Component\Log;
 
-use Psr\Log\LoggerInterface;
-
 /**
  * Class Logger
  *
