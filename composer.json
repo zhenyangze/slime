@@ -7,6 +7,10 @@
             "email": "smallslime@gmail.com"
         }
     ],
+    "require": {
+        "psr/log": "1.0.0",
+        "psr/http-message": "1.0"
+    },
     "autoload": {
         "psr-4": {
             "Slime\\": "src/"

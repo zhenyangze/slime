@@ -42,8 +42,15 @@ class Hook
 
     public static function costBefore($Obj, $sMethod, $aArg, $Local, InitBean $B, $sK)
     {
-        $sTS                 = microtime(true);
-        list($sSec, $sMS)    = explode('.', $sTS);
+        $sTS  = microtime(true);
+        $aArr = explode('.', $sTS);
+        if (count($aArr) == 2) {
+            $sSec = $aArr[0];
+            $sMS  = $aArr[1];
+        } else {
+            $sSec = $aArr[0];
+            $sMS  = '0';
+        }
         $sID                 = base64_encode(pack('LL', $sMS, $sSec));
         $Local['__RUN_AT__'] = $sTS;
         $Local['__ID__']     = $sID;
