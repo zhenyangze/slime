@@ -47,7 +47,8 @@ class Hook
     public static function destroyLog($B, $Local)
     {
         if (($REQ = $B->CTX->getIgnore('REQ')) !== null && $REQ instanceof REQ) {
-            $sLog = sprintf(' url : %s ; ip : %s ;',
+            $sLog = sprintf(' url : %s -> %s ; ip : %s ;',
+                $REQ->getMethod(),
                 $REQ->getUrl(), $REQ->guessClientIP()
             );
         } elseif (($aArgv = $B->CTX->getIgnore('aArgv')) !== null) {
