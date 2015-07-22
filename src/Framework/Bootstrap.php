@@ -27,7 +27,7 @@ class Bootstrap
     /** @var \Slime\Component\Route\Router */
     public $Router;
 
-    /** @var \Slime\Component\Log\LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface */
     public $Log;
     /** @var string */
     public $sAPI;
