@@ -62,8 +62,8 @@ class File
             $sErr = "[File] ; create dir[$sDir] failed";
             return 1;
         }
-        if (!touch($sFile = substr($sFilePath, $iPos + 1))) {
-            $sErr = "[File] ; create file[$sFile] from[$sDir] failed";
+        if (!touch($sFilePath)) {
+            $sErr = "[File] ; create file[$sFilePath] from[$sDir] failed";
             return 2;
         }
 

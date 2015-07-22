@@ -1,9 +1,9 @@
 <?php
 namespace Slime\Framework;
 
+use Psr\Log\LoggerInterface;
 use Slime\Component\Config\IAdaptor as Config_IAdaptor;
 use Slime\Component\Event\Event;
-use Slime\Component\Log\LoggerInterface;
 use Slime\Component\Route\Router;
 use Slime\Component\Support\Context;
 use Slime\Component\Support\Sugar;
