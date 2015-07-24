@@ -30,13 +30,16 @@ class Filter
     }
 
     /**
-     * @param \Slime\Component\Http\REQ $REQ
-     * @param string                    $sHOST
+     * @param \Slime\Component\Http\REQ        $REQ
+     * @param \Slime\Component\Http\RESP       $RESP
+     * @param \Slime\Component\Support\Context $CTX
+     * @param string|array                     $m_s_aHOST
      *
      * @return bool
      */
-    public static function matchHOST($REQ, $sHOST)
+    public static function matchHOST($REQ, $RESP, $CTX, $m_s_aHOST)
     {
-        return $REQ->getHeader('Host') === $sHOST;
+        $sHost = $REQ->getHeader('Host');
+        return is_array($m_s_aHOST) ? in_array($sHost, $m_s_aHOST) : $m_s_aHOST == $sHost;
     }
 }
