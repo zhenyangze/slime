@@ -129,6 +129,7 @@ class Adaptor_PHP implements IAdaptor
         $sResult  = $cbRender();
 
         if ($nEV !== null) {
+            $Local['__RESULT__'] = $sResult;
             $this->_nEV->fire(self::EV_RENDER_AFTER, array($this, __METHOD__, array(), $Local));
         }
 
