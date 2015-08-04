@@ -57,10 +57,10 @@ class Pagination
     }
 
     /**
-     * @param Model            $Model
+     * @param Model                     $Model
      * @param null|SQL_SELECT|Condition $nConditionSQLSEL
-     * @param mixed       $mCBForCount
-     * @param mixed     $mCBForList
+     * @param mixed                     $mCBForCount
+     * @param mixed                     $mCBForList
      *
      * @return bool|array [page_string, List_Group, total_item, page_count, current_page, number_per_page]
      */
@@ -95,22 +95,22 @@ class Pagination
             call_user_func($this->mCBError, $RS, $this->sPageVar, $REQ, $Url, $RESP);
             return false;
         }
-        $sPage = call_user_func($this->mCBRender, $RS, $this->sPageVar, $REQ, $Url, $RESP);
 
         # get list data
         $SQL_SEL_List = clone $OrgSEL;
         $SQL_SEL_List->limit($iNumPerPage)->offset(($iCurrentPage - 1) * $iNumPerPage);
         $List = $Model->findMulti($SQL_SEL_List, null, null, null, $mCBForList);
 
+        $RS['current_page']               = $iCurrentPage;
+        $RS['item_count_pre_page']        = count($List);
+        $RS['item_count_expect_per_page'] = $iNumPerPage;
+        $sPage                            = call_user_func($this->mCBRender, $RS, $this->sPageVar, $REQ, $Url, $RESP);
+
         # result
         return array(
-            'org_result'   => $RS,
-            'pagination'   => $sPage,
-            'group'        => $List,
-            'item_count'   => $iItem,
-            'page_count'   => $RS['page_count'],
-            'current_page' => $iCurrentPage,
-            'num_pre_page' => $iNumPerPage
+            'pagination' => $sPage,
+            'group'      => $List,
+            'data'       => $RS,
         );
     }
 
@@ -156,11 +156,11 @@ class Pagination
         $RS['first'] = 1;
         foreach (
             array(
-                'first'      => '首页',
-                'pre'        => '&lt;&lt;',
-                'list'       => $RS['list'],
-                'next'       => '&gt;&gt',
-                'page_count' => '末页'
+                'first' => '首页',
+                'pre'   => '&lt;&lt;',
+                'list'  => $RS['list'],
+                'next'  => '&gt;&gt',
+                'last'  => '末页'
             ) as $sK => $sV
         ) {
             if ($sK === 'list') {
@@ -184,6 +184,10 @@ class Pagination
                     );
             }
         }
+        $sPage .= "<li class='page-count'>
+<span>{$RS['item_count_pre_page']}/{$RS['item_count']}条</span>
+<span>{$RS['current_page']}/{$RS['page_count']}页</span>
+</li>";
         $sPage .= '</ul>';
 
         return $sPage;
@@ -257,7 +261,14 @@ class Pagination
         }
 
         return new \ArrayObject(
-            array('__error__' => 0, 'pre' => $iPre, 'list' => $aResult, 'next' => $iNext, 'page_count' => $iTotalPage)
+            array(
+                '__error__'  => 0,
+                'pre'        => $iPre,
+                'list'       => $aResult,
+                'next'       => $iNext,
+                'item_count' => $iTotalItem,
+                'page_count' => $iTotalPage
+            )
         );
     }
 
