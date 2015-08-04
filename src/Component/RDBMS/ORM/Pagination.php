@@ -156,11 +156,11 @@ class Pagination
         $RS['first'] = 1;
         foreach (
             array(
-                'first' => '首页',
-                'pre'   => '&lt;&lt;',
-                'list'  => $RS['list'],
-                'next'  => '&gt;&gt',
-                'last'  => '末页'
+                'first'      => '首页',
+                'pre'        => '&lt;&lt;',
+                'list'       => $RS['list'],
+                'next'       => '&gt;&gt',
+                'page_count' => '末页'
             ) as $sK => $sV
         ) {
             if ($sK === 'list') {
