@@ -51,8 +51,8 @@ class Factory
         $aConf['__DEFAULT__'] = empty($aConf['__DEFAULT__']) ?
             self::$aDefaultSetting :
             array_merge(self::$aDefaultSetting, $aConf['__DEFAULT__']);
-        $this->aDFT  = $aConf['__DEFAULT__'];
-        $this->aConf = $aConf['__MODEL__'];
+        $this->aDFT           = $aConf['__DEFAULT__'];
+        $this->aConf          = $aConf['__MODEL__'];
     }
 
     /**
@@ -78,34 +78,26 @@ class Factory
             return $this->aM[$sM];
         }
 
-        if (!isset($this->aConf[$sM])) {
-            if (!empty($this->aDFT['create_direct'])) {
-                $sMClass       = "{$this->aDFT['model_pre']}{$sM}";
-                $sItemClass    = "{$this->aDFT['item_pre']}{$sM}";
-                $this->aM[$sM] = new $sMClass($this, $sM, $sItemClass, $this->_getEnginePool(), $this->aDFT['db'], null);
-                return $this->aM[$sM];
-            }
-            if (empty($this->aDFT['auto_create'])) {
-                throw new \OutOfBoundsException("[ORM] ; Model conf[$sM] is not exists");
-            }
+        $aConf = isset($this->aConf[$sM]) ? $this->aConf[$sM] : array();
+        if (isset($aConf['model'])) {
+            $sMClass    = "{$this->aDFT['model_pre']}{$aConf['model']}";
+            $sItemClass = "{$this->aDFT['item_pre']}{$aConf['model']}";
         } else {
-            $naConf = $this->aConf[$sM];
+            $sMClass    = "{$this->aDFT['model_pre']}{$sM}";
+            $sItemClass = "{$this->aDFT['item_pre']}{$sM}";
+            if (!empty($this->aDFT['auto_create']) && !class_exists($sMClass, true)) {
+                $sMClass    = $this->aDFT['model_base'];
+                $sItemClass = $this->aDFT['item_base'];
+            }
         }
 
-        if (!isset($naConf['model'])) {
-            $sMClass    = $this->aDFT['model_base'];
-            $sItemClass = $this->aDFT['item_base'];
-        } else {
-            $sMClass    = "{$this->aDFT['model_pre']}{$naConf['model']}";
-            $sItemClass = "{$this->aDFT['item_pre']}{$naConf['model']}";
-        }
         $Obj = new $sMClass(
             $this, $sM, $sItemClass, $this->_getEnginePool(),
-            isset($naConf['db']) ? $naConf['db'] : $this->aDFT['db'],
-            $naConf
+            $aConf,
+            $this->aDFT
         );
-        if (!empty($naConf['inject']) && is_array($naConf['inject'])) {
-            $this->_getCTX()->inject($Obj, $naConf['inject']);
+        if (!empty($aConf['inject']) && is_array($aConf['inject'])) {
+            $this->_getCTX()->inject($Obj, $aConf['inject']);
         }
 
         return $this->aM[$sM] = $Obj;

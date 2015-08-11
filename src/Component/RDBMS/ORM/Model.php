@@ -59,37 +59,49 @@ class Model
      * @param string     $sMName
      * @param string     $sItemClass
      * @param EnginePool $EnginePool
-     * @param string     $sDB
-     * @param array      $naConf
+     * @param array      $aConf
+     * @param array      $aDFT
      *
      * @throws \OutOfBoundsException
      */
-    public function __construct($Factory, $sMName, $sItemClass, $EnginePool, $sDB, array $naConf = null)
+    public function __construct($Factory, $sMName, $sItemClass, $EnginePool, $aConf, $aDFT)
     {
         $this->Factory    = $Factory;
         $this->sMName     = $sMName;
         $this->sItemClass = $sItemClass;
-        $this->Engine     = $EnginePool->get($this->nsDB === null ? $sDB : $this->nsDB);
+        $this->Engine     = $EnginePool->get(
+            $this->nsDB === null ?
+                (isset($aConf['db']) ? $aConf['db'] : $aDFT['db'])
+                : $this->nsDB
+        );
         if ($this->sItemClass === null) {
             $this->sItemClass = $sItemClass;
         }
         if ($this->sTable === null) {
-            $this->sTable = isset($naConf['table']) ? $naConf['table'] : strtolower($sMName);
+            if (isset($aConf['table'])) {
+                $this->sTable = $aConf['table'];
+            } else {
+                if (isset($aDFT['cb_table'])) {
+                    $this->sTable = call_user_func($aDFT['cb_table'], $sMName);
+                } else {
+                    $this->sTable = strtolower($sMName);
+                }
+            }
         }
         if ($this->sPKName === null) {
-            $this->sPKName = isset($naConf['pk']) ? $naConf['pk'] : 'id';
+            $this->sPKName = isset($aConf['pk']) ? $aConf['pk'] : 'id';
         }
         if ($this->sFKName === null) {
-            $this->sFKName = isset($naConf['fk']) ? $naConf['fk'] : $this->sTable . '_id';
+            $this->sFKName = isset($aConf['fk']) ? $aConf['fk'] : $this->sTable . '_id';
         }
         if ($this->aRelConf === null) {
-            $this->aRelConf = isset($naConf['relation']) ? $naConf['relation'] : array();
+            $this->aRelConf = isset($aConf['relation']) ? $aConf['relation'] : array();
         }
         if ($this->naField === null) {
-            $this->naField = isset($naConf['fields']) ? $naConf['fields'] : null;
+            $this->naField = isset($aConf['fields']) ? $aConf['fields'] : null;
         }
         if ($this->bUseFull === null) {
-            $this->bUseFull = !empty($naConf['use_full_field_in_select']);
+            $this->bUseFull = !empty($aConf['use_full_field_in_select']);
         }
     }
 
