@@ -260,6 +260,9 @@ abstract class SQL
             $mV = $mItem[2];
             if (is_array($mV)) {
                 // IN [1,2,3,4,5...]
+                if (empty($mV)) {
+                    $mV = array(null);
+                }
                 $aTidy = array();
                 foreach ($mV as $mOne) {
                     if ($mOne instanceof BindItem) {
