@@ -257,42 +257,51 @@ abstract class SQL
             }
 
             // expr value
-            $mV = $mItem[2];
-            if (is_array($mV)) {
-                // IN [1,2,3,4,5...]
-                if (empty($mV)) {
-                    $mV = array(null);
+            $mV  = $mItem[2];
+            $sOP = strtoupper(trim($mItem[1]));
+
+            if (empty($mV) && ($sOP == 'IN' || $sOP == 'NOT IN')) {
+                if ($sOP == 'IN') {
+                    $sRow = '0';
+                } else {
+                    $sRow = '1';
                 }
-                $aTidy = array();
-                foreach ($mV as $mOne) {
-                    if ($mOne instanceof BindItem) {
-                        $this->aBindField[$mOne->sK] = $mOne->sK;
-                        if ($this->m_n_Bind === null) {
-                            $this->m_n_Bind = $mOne->Bind;
-                        }
-                        $aTidy[] = (string)$mOne;
-                    } else {
-                        $aTidy[] = is_string($mOne) ? "'$mOne'" : (string)$mOne;
-                    }
-                }
-                $sStr = '(' . implode(',', $aTidy) . ')';
-            } elseif ($mV instanceof BindItem) {
-                $this->aBindField[$mV->sK] = $mV->sK;
-                if ($this->m_n_Bind === null) {
-                    $this->m_n_Bind = $mV->Bind;
-                }
-                $sStr = (string)$mV;
             } else {
-                $sStr = is_string($mV) ? "'{$mV}'" : $mV;
+                if (is_array($mV)) {
+                    // IN [1,2,3,4,5...]
+                    $aTidy = array();
+                    foreach ($mV as $mOne) {
+                        if ($mOne instanceof BindItem) {
+                            $this->aBindField[$mOne->sK] = $mOne->sK;
+                            if ($this->m_n_Bind === null) {
+                                $this->m_n_Bind = $mOne->Bind;
+                            }
+                            $aTidy[] = (string)$mOne;
+                        } else {
+                            $aTidy[] = is_string($mOne) ? "'$mOne'" : (string)$mOne;
+                        }
+                    }
+                    $sStr = '(' . implode(',', $aTidy) . ')';
+                } elseif ($mV instanceof BindItem) {
+                    $this->aBindField[$mV->sK] = $mV->sK;
+                    if ($this->m_n_Bind === null) {
+                        $this->m_n_Bind = $mV->Bind;
+                    }
+                    $sStr = (string)$mV;
+                } else {
+                    $sStr = is_string($mV) ? "'{$mV}'" : $mV;
+                }
+
+                $sRow = sprintf(
+                    '%s %s %s',
+                    is_string($mItem[0]) && strpos($mItem[0], '.') === false ?
+                        "{$this->sQuote}{$mItem[0]}{$this->sQuote}" : $mItem[0],
+                    $sOP,
+                    $sStr
+                );
             }
 
-            $aRS[] = sprintf(
-                '%s %s %s',
-                is_string($mItem[0]) && strpos($mItem[0], '.') === false ?
-                    "{$this->sQuote}{$mItem[0]}{$this->sQuote}" : $mItem[0],
-                $mItem[1],
-                $sStr
-            );
+            $aRS[] = $sRow;
         }
 
         return implode(" $Condition->sRel ", $aRS);
