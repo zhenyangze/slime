@@ -11,15 +11,15 @@ class Bind implements \Countable, \ArrayAccess
 {
     /** @var BindItem[] */
     protected $aBind = array();
+    protected $aPreData = array();
 
     /**
      * @param null|array $naData
-     * @param bool       $bFilterNull
      */
-    public function __construct(array $naData = null, $bFilterNull = true)
+    public function __construct(array $naData = null)
     {
         if ($naData !== null) {
-            $this->setMulti($naData, $bFilterNull);
+            $this->aPreData = $naData;
         }
     }
 
@@ -42,31 +42,24 @@ class Bind implements \Countable, \ArrayAccess
     /**
      * @param string $sK
      * @param mixed  $mV
-     * @param mixed  $mAttr
      *
      * @return $this
      */
-    public function set($sK, $mV, $mAttr = null)
+    public function set($sK, $mV)
     {
-        $this->aBind[$sK] = new BindItem($this, $sK, $mV, $mAttr);
+        $this->aPreData[$sK] = $mV;
 
         return $this;
     }
 
     /**
      * @param array $aArr
-     * @param bool  $bFilterNull
      *
      * @return $this
      */
-    public function setMulti($aArr, $bFilterNull = true)
+    public function setMulti($aArr)
     {
-        foreach ($aArr as $sK => $mV) {
-            if ($mV === null && $bFilterNull) {
-                continue;
-            }
-            $this->aBind[$sK] = new BindItem($this, $sK, $mV);
-        }
+        $this->aPreData = array_merge($aArr, $this->aPreData);
 
         return $this;
     }
@@ -169,7 +162,10 @@ class Bind implements \Countable, \ArrayAccess
     public function offsetGet($offset)
     {
         if (!isset($this->aBind[$offset])) {
-            throw new \OutOfBoundsException("[DBAL] ; Key[$offset] has not been bind before");
+            if (!isset($this->aPreData[$offset])) {
+                throw new \OutOfBoundsException("[DBAL] ; Key[$offset] has not been bind before");
+            }
+            $this->aBind[$offset] = $this->aPreData[$offset];
         }
 
         return $this->aBind[$offset];

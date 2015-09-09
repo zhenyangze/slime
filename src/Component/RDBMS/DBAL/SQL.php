@@ -194,12 +194,13 @@ abstract class SQL
 
     /**
      * @param string | BindItem $m_sOrder_BindItem
+     * @param bool $bASC
      *
      * @return $this
      */
-    public function orderBy($m_sOrder_BindItem)
+    public function orderBy($m_sOrder_BindItem, $bASC = true)
     {
-        $this->naOrder[] = $m_sOrder_BindItem;
+        $this->naOrder[] = array($m_sOrder_BindItem, $bASC);
 
         return $this;
     }
@@ -333,23 +334,17 @@ abstract class SQL
         }
 
         $aTidy = array();
-        foreach ($this->naOrder as $mItem) {
+        foreach ($this->naOrder as $aRow) {
+            $sSort = empty($aRow[1]) ? 'DESC' : 'ASC';
+            $mItem = $aRow[0];
             if ($mItem instanceof V) {
-                return (string)$mItem;
+                $aTidy[] = (string)$mItem;
             } elseif ($mItem instanceof BindItem) {
                 if ($this->m_n_Bind === null) {
                     $this->m_n_Bind = $mItem->Bind;
                 }
                 $this->aBindField[$mItem->sK] = $mItem->sK;
-
-                if ($mItem->mAttr === null) {
-                    $sSort = 'ASC';
-                } else {
-                    $sS    = strtoupper($mItem->mAttr);
-                    $sSort = ($sS === '-' || $sS === 'DESC') ? 'DESC' : 'ASC';
-                }
-                $mItem->changeV($mItem->mV . " $sSort");
-                $aTidy[] = (string)$mItem;
+                $aTidy[] = "$mItem $sSort";
             } elseif (is_string($mItem)) {
                 $sSort = $mItem[0] === '-' ? 'DESC' : 'ASC';
                 if ($mItem[0] === '-' || $mItem[0] === '+') {
