@@ -81,6 +81,7 @@ class Call
      */
     public function setTimeOut($iConnTimeoutMS, $iTimeoutMS)
     {
+        $this->aOpt[CURLOPT_NOSIGNAL]          = 1;
         $this->aOpt[CURLOPT_CONNECTTIMEOUT_MS] = $iConnTimeoutMS;
         $this->aOpt[CURLOPT_TIMEOUT_MS]        = $iTimeoutMS;
 
