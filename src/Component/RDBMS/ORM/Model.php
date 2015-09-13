@@ -126,6 +126,11 @@ class Model
         return SQL::DEL($this->sTable);
     }
 
+    /**
+     * @param null|Group $Group
+     *
+     * @return Item
+     */
     public function createItem($Group = null)
     {
         return new $this->sItemClass([], $this, $Group);
