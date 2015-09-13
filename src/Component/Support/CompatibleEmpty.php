@@ -1,14 +1,13 @@
 <?php
-namespace Slime\Component\RDBMS\ORM;
+namespace Slime\Component\Support;
 
-/**
- * Class CompatibleItem
- *
- * @package Slime\Component\RDBMS\ORM
- * @author  smallslime@gmail.com
- */
-class CItem
+class CompatibleEmpty
 {
+    public function isEmpty()
+    {
+        return true;
+    }
+
     public function __call($sMethod, $aArg)
     {
         return $this;

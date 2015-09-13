@@ -27,23 +27,6 @@ class Factory
     protected $aM = array();
 
     /**
-     * @param Item | CItem | Group | null $mData
-     *
-     * @return bool
-     */
-    public static function isEmpty($mData)
-    {
-        if ($mData === null ||
-            $mData instanceof CItem ||
-            ($mData instanceof Group && $mData->count() == 0)
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * @param array $aConf model conf
      */
     public function __construct(array $aConf)
@@ -111,49 +94,6 @@ class Factory
     public function __get($sVar)
     {
         return $this->$sVar;
-    }
-
-    protected $bCMode = false;
-    protected $bCMode_Tmp = false;
-
-    /**
-     * @param bool $b
-     */
-    public function changeCMode_Tmp($b)
-    {
-        if ($this->bCMode != $b) {
-            $this->bCMode_Tmp = $this->bCMode;
-            $this->bCMode     = (bool)$b;
-        }
-    }
-
-    public function resetCMode()
-    {
-        if ($this->bCMode_Tmp !== null) {
-            $this->bCMode     = $this->bCMode_Tmp;
-            $this->bCMode_Tmp = null;
-        }
-    }
-
-    /**
-     * @param bool $b
-     */
-    public function changeCMode($b)
-    {
-        $this->bCMode = (bool)$b;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isCMode()
-    {
-        return $this->bCMode;
-    }
-
-    public function newNull()
-    {
-        return $this->bCMode ? new CItem() : null;
     }
 
     /** @var null|EnginePool */

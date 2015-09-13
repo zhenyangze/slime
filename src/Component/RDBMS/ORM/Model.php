@@ -11,6 +11,7 @@ use Slime\Component\RDBMS\DBAL\SQL_INSERT;
 use Slime\Component\RDBMS\DBAL\SQL_SELECT;
 use Slime\Component\RDBMS\DBAL\SQL_UPDATE;
 use Slime\Component\RDBMS\DBAL\V;
+use Slime\Component\Support\CompatibleEmpty;
 
 /**
  * Class Model
@@ -250,7 +251,7 @@ class Model
      * @param Condition|SQL_SELECT|string|int $m_n_siPK_Condition_SQL
      * @param mixed                           $mCBBeforeQ
      *
-     * @return Item|CItem|null
+     * @return Item|CompatibleEmpty|null
      */
     public function find($m_n_siPK_Condition_SQL, $mCBBeforeQ = null)
     {
@@ -272,7 +273,7 @@ class Model
         }
         $mItem = $this->Engine->Q($SQL);
 
-        return empty($mItem) ? $this->Factory->newNull() : new $this->sItemClass($mItem[0], $this);
+        return empty($mItem) ? new CompatibleEmpty() : new $this->sItemClass($mItem[0], $this);
     }
 
     /**

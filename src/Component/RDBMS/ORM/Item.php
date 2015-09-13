@@ -4,6 +4,7 @@ namespace Slime\Component\RDBMS\ORM;
 use Slime\Component\RDBMS\DBAL\Condition;
 use Slime\Component\RDBMS\DBAL\SQL_SELECT;
 use Slime\Component\RDBMS\DBAL\V;
+use Slime\Component\Support\CompatibleEmpty;
 
 /**
  * Class Item
@@ -142,7 +143,7 @@ class Item implements \ArrayAccess
         }
 
         if ($mResult === null) {
-            $mResult = $this->__M__->Factory->newNull();
+            $mResult = new CompatibleEmpty();
         }
 
         return $mResult;
@@ -486,5 +487,10 @@ class Item implements \ArrayAccess
     public function offsetUnset($offset)
     {
         unset($this->aData[$offset]);
+    }
+
+    public function isEmpty()
+    {
+        return false;
     }
 }

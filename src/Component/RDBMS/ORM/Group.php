@@ -2,6 +2,7 @@
 namespace Slime\Component\RDBMS\ORM;
 
 use Slime\Component\RDBMS\DBAL\Condition;
+use Slime\Component\Support\CompatibleEmpty;
 
 /**
  * Class Group
@@ -89,7 +90,7 @@ class Group implements \ArrayAccess, \Iterator, \Countable
             $aQ[$sThisPK] = $ItemNew;
         }
         if (!isset($aQ[$sPK])) {
-            return $this->Model->Factory->newNull();
+            return new CompatibleEmpty();
         }
         return $aQ[$sPK];
     }
@@ -122,7 +123,8 @@ class Group implements \ArrayAccess, \Iterator, \Countable
         if ($noModelItem === null) {
             return $this->aRelation[$sModelName];
         } else {
-            return isset($this->aRelation[$sModelName][$sFK]) ? $this->aRelation[$sModelName][$sFK] : $this->Model->Factory->newNull();
+            return isset($this->aRelation[$sModelName][$sFK]) ?
+                $this->aRelation[$sModelName][$sFK] : new CompatibleEmpty();
         }
     }
 
@@ -285,5 +287,10 @@ class Group implements \ArrayAccess, \Iterator, \Countable
             $sStr .= "\t" . (string)$Item . "\n";
         }
         return ($sStr . "]\n");
+    }
+
+    public function isEmpty()
+    {
+        return count($this->aModelItem) > 0;
     }
 }
