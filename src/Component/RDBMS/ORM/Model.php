@@ -126,6 +126,12 @@ class Model
         return SQL::DEL($this->sTable);
     }
 
+    public function createItem($Group = null)
+    {
+        return new $this->sItemClass([], $this, $Group);
+    }
+
+
     /**
      * @param string $sFKName
      */
