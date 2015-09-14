@@ -48,6 +48,7 @@ class Model
     protected $naField;
     protected $bUseFull;
 
+    protected $naThroughTable = null;
     protected $nsFKNameTmp = null;
 
     public function __get($sK)
@@ -104,6 +105,9 @@ class Model
         if ($this->bUseFull === null) {
             $this->bUseFull = !empty($aConf['use_full_field_in_select']);
         }
+        if ($this->naThroughTable === null) {
+            $this->naThroughTable = isset($aConf['through_table']) ? $aConf['through_table'] : null;
+        }
     }
 
     public function SQL_INS()
@@ -154,12 +158,29 @@ class Model
         }
     }
 
+    /**
+     * @param Model $M
+     * @return string
+     */
+    public function getThroughTable($M)
+    {
+        if (isset($this->naThroughTable[$M->sMName])) {
+            return $this->naThroughTable[$M->sMName];
+        } else {
+            return 'rel__' . (
+            strcmp($this->sTable, $M->sTable) > 0 ?
+                $M->sTable . '__' . $this->sTable :
+                $this->sTable . '__' . $M->sTable
+            );
+        }
+    }
 
-    public $__aCachedTransAuto__ = array();
+
+    protected $__aCachedTransAuto__ = array();
 
     public function beginTransaction()
     {
-        $PDO = $this->Engine->inst();
+        $PDO                          = $this->Engine->inst();
         $this->__aCachedTransAuto__[] = $PDO->getAttribute(\PDO::ATTR_AUTOCOMMIT);
         $PDO->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
         $PDO->beginTransaction();

@@ -2,7 +2,6 @@
 namespace Slime\Component\RDBMS\ORM;
 
 use Slime\Component\RDBMS\DBAL\Condition;
-use Slime\Component\RDBMS\DBAL\SQL_SELECT;
 use Slime\Component\RDBMS\DBAL\V;
 use Slime\Component\Support\CompatibleEmpty;
 
@@ -94,38 +93,25 @@ class Item implements \ArrayAccess
      */
     public function __call($sModelName, $mValue = array())
     {
-        if (substr($sModelName, 0, 5) === 'count') {
-            $sModelName = substr($sModelName, 5);
-            $sMethod    = 'relationCount';
-        } else {
-            $sMethod = 'relation';
-        }
-        if (empty($mValue)) {
-            return $this->$sMethod($sModelName);
-        } else {
-            array_unshift($mValue, $sModelName);
-            return call_user_func_array(array($this, $sMethod), $mValue);
-        }
+        return $this->relation(
+            $sModelName,
+            isset($mValue[0]) ? $mValue[0] : null,
+            substr($sModelName, 0, 5) === 'count'
+        );
     }
 
     /**
-     * @param string                    $sModelName
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param string                    $sOrderBy
-     * @param int                       $iLimit
-     * @param int                       $iOffset
-     * @param mixed                     $mCBBeforeQ
+     * @param string $sModelName
+     * @param mixed  $mCBBeforeQ
+     * @param bool   $bCount
      *
      * @return Item|Item[]|Group|null
      * @throws \OutOfBoundsException
      */
     public function relation(
         $sModelName,
-        $m_n_Condition_SQLSEL = null,
-        $sOrderBy = null,
-        $iLimit = null,
-        $iOffset = null,
-        $mCBBeforeQ = null
+        $mCBBeforeQ = null,
+        $bCount = false
     ) {
         $mResult = null;
 
@@ -139,7 +125,7 @@ class Item implements \ArrayAccess
                 $this->$sMethod($sModelName) :
                 $this->__Group__->relation($sModelName, $this);
         } else {
-            $mResult = $this->$sMethod($sModelName, $m_n_Condition_SQLSEL, $sOrderBy, $iLimit, $iOffset, $mCBBeforeQ);
+            $mResult = $this->$sMethod($sModelName, $mCBBeforeQ, $bCount);
         }
 
         if ($mResult === null) {
@@ -147,29 +133,6 @@ class Item implements \ArrayAccess
         }
 
         return $mResult;
-    }
-
-    /**
-     * @param string                    $sModelName
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param mixed                     $mCBBeforeQ
-     *
-     * @return int
-     * @throws \OutOfBoundsException
-     */
-    public function relationCount($sModelName, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
-    {
-        if (!isset($this->__M__->aRelConf[$sModelName])) {
-            throw new \OutOfBoundsException("[ORM] ; Can not find relation for [$sModelName]");
-        }
-
-        $sMethod = strtolower($this->__M__->aRelConf[$sModelName]);
-        if ($sMethod === 'hasone' || $sMethod === 'belongsto') {
-            return null;
-        }
-
-        $sMethod .= 'Count';
-        return $this->$sMethod($sModelName, $m_n_Condition_SQLSEL, $mCBBeforeQ);
     }
 
     /**
@@ -265,153 +228,62 @@ class Item implements \ArrayAccess
     }
 
     /**
-     * @param string                    $sModel
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param string                    $sOrderBy
-     * @param int                       $iLimit
-     * @param int                       $iOffset
-     * @param mixed                     $mCBBeforeQ
+     * @param string $sModel
+     * @param mixed  $mCBBeforeQ
+     * @param bool   $bCount
      *
      * @return Group|Item[]
      */
     public function hasMany(
         $sModel,
-        $m_n_Condition_SQLSEL = null,
-        $sOrderBy = null,
-        $iLimit = null,
-        $iOffset = null,
-        $mCBBeforeQ = null
+        $mCBBeforeQ = null,
+        $bCount = false
     ) {
-        $M = $this->__M__->Factory->get($sModel);
-        if ($m_n_Condition_SQLSEL instanceof SQL_SELECT) {
-            return $M->findMulti($m_n_Condition_SQLSEL, null, null, null, $mCBBeforeQ);
-        }
-
+        $M         = $this->__M__->Factory->get($sModel);
         $Condition = Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$M->sPKName]);
-
-        if ($m_n_Condition_SQLSEL instanceof Condition) {
-            $Condition->sub($m_n_Condition_SQLSEL);
-        }
-
-        return $M->findMulti($Condition, $sOrderBy, $iLimit, $iOffset, $mCBBeforeQ);
+        return $bCount ?
+            $M->findCount($Condition, $mCBBeforeQ) :
+            $M->findMulti($Condition, null, null, null, $mCBBeforeQ);
     }
 
     /**
-     * @param string                    $sModel
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param mixed                     $mCBBeforeQ
-     *
-     * @return int
-     */
-    public function hasManyCount($sModel, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
-    {
-        $M = $this->__M__->Factory->get($sModel);
-        if ($m_n_Condition_SQLSEL instanceof SQL_SELECT) {
-            return $M->findCount($m_n_Condition_SQLSEL, $mCBBeforeQ);
-        }
-
-        $Condition = Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$M->sPKName]);
-
-        if ($m_n_Condition_SQLSEL instanceof Condition) {
-            $Condition->sub($m_n_Condition_SQLSEL, $mCBBeforeQ);
-        }
-        return $M->findCount($Condition);
-    }
-
-    /**
-     * @param string                    $sModelTarget
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param string                    $nsOrderBy
-     * @param int                       $niLimit
-     * @param int                       $niOffset
+     * @param string $sModelTarget
+     * @param mixed  $mCBBeforeQ
+     * @param bool   $bCount
      *
      * @return Group|Item[]
      */
-    public function hasManyThrough(
-        $sModelTarget,
-        $m_n_Condition_SQLSEL = null,
-        $nsOrderBy = null,
-        $niLimit = null,
-        $niOffset = null
-    ) {
-        $MTarget   = $this->__M__->Factory->get($sModelTarget);
-        $MOrg      = $this->__M__;
-        $sRelTName = self::getTableNameFromManyThrough($MTarget, $MOrg);
-
-        if ($m_n_Condition_SQLSEL instanceof Condition) {
-            $SQL = $MOrg->SQL_SEL()
-                ->join(
-                    $sRelTName,
-                    Condition::build()->add(
-                        "{$MTarget->sTable}.{$MTarget->sPKName}",
-                        '=',
-                        V::make("$sRelTName.{$MTarget->sFKName}")
-                    )
-                )
-                ->fields("{$MTarget->sTable}.*")
-                ->where($m_n_Condition_SQLSEL);
-            if ($nsOrderBy !== null) {
-                $SQL->orderBy($nsOrderBy);
-            }
-            if ($niLimit !== null) {
-                $SQL->limit($niLimit);
-            }
-            if ($niOffset !== null) {
-                $SQL->offset($niLimit);
-            }
-
-            return $MTarget->findMulti($SQL);
-        } else {
-            return $MTarget->findMulti($m_n_Condition_SQLSEL);
-        }
-    }
-
-    /**
-     * @param string                    $sModelTarget
-     * @param null|Condition|SQL_SELECT $m_n_Condition_SQLSEL
-     * @param mixed                     $mCBBeforeQ
-     *
-     * @return bool|int
-     */
-    public function hasManyThroughCount($sModelTarget, $m_n_Condition_SQLSEL = null, $mCBBeforeQ = null)
+    public function hasManyThrough($sModelTarget, $mCBBeforeQ = null, $bCount = false)
     {
         $MTarget   = $this->__M__->Factory->get($sModelTarget);
         $MOrg      = $this->__M__;
-        $sRelTName = self::getTableNameFromManyThrough($MTarget, $MOrg);
+        $sRelTName = $MOrg->getThroughTable($MTarget);
 
-        $JoinCondition = Condition::build()->add(
-            "{$MTarget->sTable}.{$MTarget->sPKName}",
-            '=',
-            V::make("$sRelTName.{$MTarget->sFKName}")
+        $SQL = $MTarget->SQL_SEL()
+            ->join(
+                $sRelTName,
+                Condition::build()->add(
+                    "{$MTarget->sTable}.{$MTarget->sPKName}",
+                    '=',
+                    V::make("$sRelTName.{$MTarget->sFKName}")
+                )
+            )
+            ->join(
+                $MOrg->sTable,
+                Condition::build()->add(
+                    "{$MOrg->sTable}.{$MOrg->sPKName}",
+                    '=',
+                    V::make("$sRelTName.{$MOrg->sFKName}")
+                )
+            )
+            ->fields("{$MTarget->sTable}.*");
+        $SQL->where(
+            Condition::build()->add("{$MOrg->sTable}.{$MOrg->sPKName}", '=', $this->{$MOrg->sPKName})
         );
-        if ($m_n_Condition_SQLSEL instanceof Condition) {
-            $SQL = $MOrg->SQL_SEL()
-                ->join(
-                    $sRelTName,
-                    $JoinCondition
-                )
-                ->fields("{$MTarget->sTable}.*")
-                ->where($m_n_Condition_SQLSEL);
 
-            return $MTarget->findCount($SQL, $mCBBeforeQ);
-        } else {
-            return $MTarget->findCount($m_n_Condition_SQLSEL, $mCBBeforeQ);
-        }
-    }
-
-    /**
-     * @param Model $M1
-     * @param Model $M2
-     *
-     * @return string
-     */
-    public static function getTableNameFromManyThrough($M1, $M2)
-    {
-        //@todo find in config
-        $sRelatedTableName = 'rel__' . (strcmp($M1->sTable, $M2->sTable) > 0 ?
-                $M2->sTable . '__' . $M1->sTable :
-                $M1->sTable . '__' . $M2->sTable);
-        return $sRelatedTableName;
+        return $bCount ?
+            $MTarget->findCount($SQL, $mCBBeforeQ) :
+            $MTarget->findMulti($SQL, null, null, null, $mCBBeforeQ);
     }
 
     /**
@@ -424,7 +296,7 @@ class Item implements \ArrayAccess
 
     public function __toString()
     {
-        return var_export($this->aData, true);
+        return (string)var_export($this->aData, true);
     }
 
     /**
