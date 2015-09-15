@@ -71,16 +71,18 @@ class Engine
         $L['__STOP__']   = true;
     }
 
+    /** @var array */
     protected $aInst;
+    /** @var array */
     protected $aInstConf;
+    /** @var string */
     protected $sDefaultInstKey;
+    /** @var mixed */
     protected $mCBForMultiServer;
-
     /** @var Packer */
     protected $OBJSTMTPacker;
-
-    /** @var SQL */
-    protected $LastSQL;
+    /** @var EnginePool */
+    protected $EnginePool;
 
     public function __get($sVar)
     {
@@ -88,13 +90,15 @@ class Engine
     }
 
     /**
-     * @param array $aParams see README.md
+     * @param array      $aParams see README.md
+     * @param EnginePool $EnginePool
      */
-    public function __construct(array $aParams)
+    public function __construct(array $aParams, $EnginePool)
     {
         reset($aParams);
         $this->aInstConf       = $aParams;
         $this->sDefaultInstKey = key($aParams);
+        $this->EnginePool      = $EnginePool;
     }
 
     /**
@@ -188,7 +192,7 @@ class Engine
      */
     public function prepare($soSQL)
     {
-        $this->LastSQL = $soSQL;
+        $this->EnginePool->setLastSQL($soSQL);
         return $this->inst('prepare', func_get_args())->prepare((string)$soSQL);
     }
 
@@ -199,7 +203,7 @@ class Engine
      */
     public function query($soSQL)
     {
-        $this->LastSQL = $soSQL;
+        $this->EnginePool->setLastSQL($soSQL);
         return $this->inst('query', func_get_args())->query((string)$soSQL);
     }
 
@@ -210,16 +214,8 @@ class Engine
      */
     public function exec($soSQL)
     {
-        $this->LastSQL = $soSQL;
+        $this->EnginePool->setLastSQL($soSQL);
         return $this->inst('exec', func_get_args())->exec((string)$soSQL);
-    }
-
-    public function getLastSQL()
-    {
-        $sStr = (string)$this->LastSQL;
-        $aBindData = $this->LastSQL instanceof SQL && $this->LastSQL->m_n_Bind ?
-            $this->LastSQL->m_n_Bind->getBindMap($this->LastSQL) : array();
-        return array($sStr, $aBindData);
     }
 
     /** @var null|Event */

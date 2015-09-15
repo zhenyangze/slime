@@ -37,7 +37,7 @@ class EnginePool
             if (!isset($this->aConf[$sK])) {
                 throw new \OutOfBoundsException("[DBAL] ; Database config [$sK] is not exist");
             }
-            $Obj = new Engine($this->aConf[$sK]);
+            $Obj = new Engine($this->aConf[$sK], $this);
             if (($Ev = $this->_getEvent()) !== null) {
                 $Obj->_setEvent($Ev);
             }
@@ -53,6 +53,23 @@ class EnginePool
         return $this->aEngine[$sK];
     }
 
+    /** @var  SQL */
+    protected $LastSQL;
+    public function setLastSQL($SQL)
+    {
+        $this->LastSQL = $SQL;
+    }
+
+    /**
+     * @return array [0: sql_string, 1:bindData[]]
+     */
+    public function getLastSQL()
+    {
+        $sStr = (string)$this->LastSQL;
+        $aBindData = $this->LastSQL instanceof SQL && $this->LastSQL->m_n_Bind ?
+            $this->LastSQL->m_n_Bind->getBindMap($this->LastSQL) : array();
+        return array($sStr, $aBindData);
+    }
 
     /** @var null|Event */
     private $_nEV = null;

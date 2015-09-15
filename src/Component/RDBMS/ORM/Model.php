@@ -19,37 +19,39 @@ use Slime\Component\Support\CompatibleEmpty;
  * @package Slime\Component\RDBMS\ORM
  * @author  smallslime@gmail.com
  *
- * @property-read string     $sMName
- * @property-read string     $sTable
- * @property-read string     $sPKName
- * @property-read string     $sFKName
- * @property-read array      $aRelConf
- * @property-read null|array $naField
- * @property-read bool       $bUseFull
+ * @property-read EnginePool        $EnginePool
+ * @property-read Engine            $Engine
+ * @property-read Factory           $Factory
  *
- * @property-read EnginePool $EnginePool
- * @property-read Engine     $Engine
- * @property-read Factory    $Factory
- * @property-read string     $sItemClass
+ * @property-read string            $sMName
+ * @property-read string            $sItemClass
+ *
+ * @property-read string            $nsDB
+ * @property-read string            $sTable
+ * @property-read string            $sPKName
+ * @property-read null|string|array $aFKName
+ * @property-read array             $aRelConf
+ * @property-read null|array        $naField
+ * @property-read bool              $bUseFullField
+ * @property-read null|array        $naThroughTable
  */
 class Model
 {
     protected $Factory;
     protected $EnginePool;
     protected $Engine;
+
     protected $sMName;
+    protected $sItemClass;
 
     protected $nsDB;
-    protected $sItemClass;
     protected $sTable;
     protected $sPKName;
-    protected $sFKName;
+    protected $aFKName;
     protected $aRelConf;
     protected $naField;
-    protected $bUseFull;
-
-    protected $naThroughTable = null;
-    protected $nsFKNameTmp = null;
+    protected $bUseFullField;
+    protected $naThroughTable;
 
     public function __get($sK)
     {
@@ -93,8 +95,11 @@ class Model
         if ($this->sPKName === null) {
             $this->sPKName = isset($aConf['pk']) ? $aConf['pk'] : 'id';
         }
-        if ($this->sFKName === null) {
-            $this->sFKName = isset($aConf['fk']) ? $aConf['fk'] : $this->sTable . '_id';
+        if ($this->aFKName === null) {
+            $this->aFKName    = isset($aConf['fk']) ? $aConf['fk'] : array();
+            if (!isset($this->aFKName[0])) {
+                $this->aFKName[0] = $this->sTable . '_id';
+            }
         }
         if ($this->aRelConf === null) {
             $this->aRelConf = isset($aConf['relation']) ? $aConf['relation'] : array();
@@ -102,8 +107,8 @@ class Model
         if ($this->naField === null) {
             $this->naField = isset($aConf['fields']) ? $aConf['fields'] : null;
         }
-        if ($this->bUseFull === null) {
-            $this->bUseFull = !empty($aConf['use_full_field_in_select']);
+        if ($this->bUseFullField === null) {
+            $this->bUseFullField = !empty($aConf['use_full_field_in_select']);
         }
         if ($this->naThroughTable === null) {
             $this->naThroughTable = isset($aConf['through_table']) ? $aConf['through_table'] : null;
@@ -122,7 +127,7 @@ class Model
 
     public function SQL_SEL()
     {
-        return SQL::SEL($this->sTable, $this->bUseFull ? $this->naField : null);
+        return SQL::SEL($this->sTable, $this->bUseFullField ? $this->naField : null);
     }
 
     public function SQL_DEL()
@@ -140,26 +145,19 @@ class Model
         return new $this->sItemClass([], $this, $Group);
     }
 
-
     /**
-     * @param string $sFKName
+     * @param Model $M
+     *
+     * @return string
      */
-    public function setFKTmp($sFKName)
+    public function getFKName($M)
     {
-        $this->nsFKNameTmp = $this->sFKName;
-        $this->sFKName     = $sFKName;
-    }
-
-    public function resetFK()
-    {
-        if ($this->nsFKNameTmp !== null) {
-            $this->sFKName     = $this->nsFKNameTmp;
-            $this->nsFKNameTmp = null;
-        }
+        return isset($this->aFKName[$M->sMName]) ? $this->aFKName[$M->sMName] : $this->aFKName[0];
     }
 
     /**
      * @param Model $M
+     *
      * @return string
      */
     public function getThroughTable($M)
@@ -174,7 +172,6 @@ class Model
             );
         }
     }
-
 
     protected $__aCachedTransAuto__ = array();
 

@@ -13,6 +13,9 @@ namespace Slime\Component\RDBMS\DBAL;
  * @property-read null | array     $naOrder
  * @property-read null | int       $niLimit
  * @property-read null | int       $niOffset
+ * @property-read null | SQL       $m_n_sSQL
+ * @property-read null | Bind      $m_n_Bind
+ * @property-read null | array     $aBindField
  */
 abstract class SQL
 {
@@ -79,17 +82,14 @@ abstract class SQL
     protected $niOffset = null;
     /** @var null | string */
     protected $m_n_sSQL = null;
-
     /** @var null | Bind */
     protected $m_n_Bind = null;
-
     /** @var array */
     protected $aBindField = array();
 
+
     protected $sQuote = '`';
-
     protected $sSQLType = '';
-
     /**
      * @param $iType
      */

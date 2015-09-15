@@ -207,7 +207,7 @@ class Item implements \ArrayAccess
     {
         $M = $this->__M__->Factory->get($sModelName);
         return $M->find(
-            Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$this->__M__->sPKName]),
+            Condition::build()->add($this->__M__->getFKName($M), '=', $this->aData[$this->__M__->sPKName]),
             $mCBBeforeQ
         );
     }
@@ -222,7 +222,7 @@ class Item implements \ArrayAccess
     {
         $M = $this->__M__->Factory->get($sModelName);
         return $M->find(
-            Condition::build()->add($M->sPKName, '=', $this->aData[$M->sFKName]),
+            Condition::build()->add($M->sPKName, '=', $this->aData[$M->getFKName($this->__M__)]),
             $mCBBeforeQ
         );
     }
@@ -240,7 +240,7 @@ class Item implements \ArrayAccess
         $bCount = false
     ) {
         $M         = $this->__M__->Factory->get($sModel);
-        $Condition = Condition::build()->add($this->__M__->sFKName, '=', $this->aData[$M->sPKName]);
+        $Condition = Condition::build()->add($this->__M__->getFKName($M), '=', $this->aData[$M->sPKName]);
         return $bCount ?
             $M->findCount($Condition, $mCBBeforeQ) :
             $M->findMulti($Condition, null, null, null, $mCBBeforeQ);
@@ -265,7 +265,7 @@ class Item implements \ArrayAccess
                 Condition::build()->add(
                     "{$MTarget->sTable}.{$MTarget->sPKName}",
                     '=',
-                    V::make("$sRelTName.{$MTarget->sFKName}")
+                    V::make("$sRelTName.{$MTarget->getFKName($MOrg)}")
                 )
             )
             ->join(
@@ -273,7 +273,7 @@ class Item implements \ArrayAccess
                 Condition::build()->add(
                     "{$MOrg->sTable}.{$MOrg->sPKName}",
                     '=',
-                    V::make("$sRelTName.{$MOrg->sFKName}")
+                    V::make("$sRelTName.{$MOrg->getFKName($MTarget)}")
                 )
             )
             ->fields("{$MTarget->sTable}.*");
