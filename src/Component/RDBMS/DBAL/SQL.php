@@ -165,6 +165,18 @@ abstract class SQL
     }
 
     /**
+     * @param string $sTable
+     *
+     * @return $this
+     */
+    public function table($sTable)
+    {
+        $this->sTable_SQLSEL = $sTable;
+
+        return $this;
+    }
+
+    /**
      * @param Condition $Condition
      *
      * @return $this
