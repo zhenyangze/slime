@@ -85,8 +85,9 @@ class Group implements \ArrayAccess, \Iterator, \Countable
 
         $this->aRelObj[$sModelName] = array();
         $aQ                         = &$this->aRelObj[$sModelName];
+        $sFKName                    = $this->Model->getFKName($Model);
         foreach ($Group as $ItemNew) {
-            $sThisPK      = $this->aModelItem[$ItemNew[$this->Model->sFKName]][$this->Model->sPKName];
+            $sThisPK      = $this->aModelItem[$ItemNew[$sFKName]][$this->Model->sPKName];
             $aQ[$sThisPK] = $ItemNew;
         }
         if (!isset($aQ[$sPK])) {
@@ -107,7 +108,8 @@ class Group implements \ArrayAccess, \Iterator, \Countable
             return $this->aRelation[$sModelName];
         } else {
             $Model = $this->Model->Factory->get($sModelName);
-            $sFK   = $noModelItem[$Model->sFKName];
+            $sFKName = $Model->getFKName($this->Model);
+            $sFK   = $noModelItem[$sFKName];
             if (isset($this->aRelation[$sModelName])) {
                 return isset($this->aRelation[$sModelName][$sFK]) ? $this->aRelation[$sModelName][$sFK] : null;
             }
@@ -115,8 +117,8 @@ class Group implements \ArrayAccess, \Iterator, \Countable
 
         $aFK = array();
         foreach ($this->aModelItem as $Item) {
-            if ($Item[$Model->sFKName] !== null) {
-                $aFK[] = $Item[$Model->sFKName];
+            if ($Item[$sFKName] !== null) {
+                $aFK[] = $Item[$sFKName];
             }
         }
         $this->aRelation[$sModelName] = $Model->findMulti(Condition::build()->add($Model->sPKName, 'IN', $aFK));
