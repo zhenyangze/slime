@@ -149,7 +149,7 @@ HTML;
             $cbRender = function ($aData) use($sDebugLayer) {
                 require $sDebugLayer;
             };
-            $cbRender($this->aData);
+            $sResult = $cbRender($this->aData);
         }
 
         echo $sResult;
