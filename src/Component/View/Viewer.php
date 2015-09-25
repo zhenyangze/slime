@@ -20,6 +20,6 @@ final class Viewer
      */
     public static function factory($sAdaptor)
     {
-        return Sugar::createObjAdaptor(__CLASS__, func_get_args());
+        return Sugar::createObjAdaptor(__NAMESPACE__, func_get_args());
     }
 }
