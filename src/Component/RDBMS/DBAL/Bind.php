@@ -24,19 +24,24 @@ class Bind implements \Countable, \ArrayAccess
     }
 
     /**
-     * @param string $sK 可以传多个参数
+     * @param string|array $m_sK_aK
      *
      * @return bool
      */
-    public function has($sK)
+    public function has($m_sK_aK)
     {
-        foreach (func_get_args() as $sK) {
-            if (!isset($this->aBind[$sK])) {
-                return false;
+        if (is_string($m_sK_aK)) {
+            return isset($this->aPreData[$m_sK_aK]) || isset($this->aBind[$m_sK_aK]);
+        } elseif (is_array($m_sK_aK)) {
+            foreach ($m_sK_aK as $sK) {
+                if (!isset($this->aPreData[$sK]) && !isset($this->aBind[$sK])) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            return false;
         }
-
-        return true;
     }
 
     /**
