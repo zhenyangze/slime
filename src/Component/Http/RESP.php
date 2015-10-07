@@ -77,20 +77,15 @@ class RESP
     /**
      * @param array|string $m_aKV_sK
      * @param null|string  $m_n_sV
-     * @param bool         $bOverwrite
      *
      * @return $this
      */
-    public function setHeader($m_aKV_sK, $m_n_sV = null, $bOverwrite = true)
+    public function setHeader($m_aKV_sK, $m_n_sV = null)
     {
-        if (!isset($this->aHeader[$m_aKV_sK]) || $bOverwrite) {
-            $this->aHeader[$m_aKV_sK] = array($m_n_sV);
+        if (is_array($m_aKV_sK)) {
+            $this->aHeader = array_merge($this->aHeader, $m_aKV_sK);
         } else {
-            foreach ($m_aKV_sK as $sK => $mV) {
-                if (!isset($this->aHeader[$sK]) || $bOverwrite) {
-                    $this->aHeader[$sK] = (array)$mV;
-                }
-            }
+            $this->aHeader[$m_aKV_sK] = $m_n_sV;
         }
 
         return $this;
@@ -282,7 +277,9 @@ class RESP
             if (!empty($this->aHeader)) {
                 foreach ($this->aHeader as $sK => $mRow) {
                     foreach ((array)$mRow as $sItem) {
-                        header("$sK: $sItem");
+                        if ($sItem) {
+                            header("$sK: $sItem");
+                        }
                     }
                 }
             }
