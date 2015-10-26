@@ -170,7 +170,7 @@ class Bind implements \Countable, \ArrayAccess
             if (!isset($this->aPreData[$offset])) {
                 throw new \OutOfBoundsException("[DBAL] ; Key[$offset] has not been bind before");
             }
-            $this->aBind[$offset] = new Bind($this->aPreData[$offset]);
+            $this->aBind[$offset] = new BindItem($this, $offset, $this->aPreData[$offset]);
         }
 
         return $this->aBind[$offset];
